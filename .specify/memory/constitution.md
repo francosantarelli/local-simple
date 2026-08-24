@@ -45,13 +45,17 @@ contables reales del local, no datos de prueba.
 
 ## Restricciones técnicas
 
-- **Stack**: Next.js con TypeScript (frontend + API routes en un mismo
-  proyecto, sin separar backend/frontend en repos distintos mientras el
-  alcance sea el actual).
-- **Base de datos**: SQLite gestionada con Prisma como ORM/migraciones. Se
-  reevalúa el motor de base de datos solo si aparece una necesidad real de
-  concurrencia o escala que SQLite no pueda cubrir.
-- **Tests**: Vitest como test runner.
+- **Frontend**: HTML/CSS/JS plano servido por GitHub Pages, sin build ni
+  framework, siguiendo el mismo patrón que control-economico. Se introduce
+  un framework/build solo si la complejidad de la UI lo justifica en la
+  práctica, no de forma preventiva.
+- **Backend/Base de datos**: Supabase (Postgres) con Row Level Security,
+  reutilizando el mismo proveedor que ya se opera en control-economico.
+- **Integración con ARCA**: se implementa en Supabase Edge Functions
+  (server-side), nunca en el frontend estático. Ahí viven el certificado y
+  la clave privada como secretos de la función, conforme al Principio IV.
+- **Tests**: Vitest como test runner, tanto para lógica de frontend como
+  para las Edge Functions.
 - **Alcance inicial**: usuarios, ventas y facturas conectadas a la API de
   ARCA. Cualquier feature que no sirva directamente a facturar el local de
   la amiga se documenta como posible extensión futura, pero no se
@@ -82,4 +86,4 @@ versionan:
 - **MINOR**: se agrega un principio o sección nueva.
 - **PATCH**: aclaraciones de redacción que no cambian el significado.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-24 | **Last Amended**: 2026-08-24
+**Version**: 1.1.0 | **Ratified**: 2026-08-24 | **Last Amended**: 2026-08-24
