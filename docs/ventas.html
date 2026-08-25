@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=5" />
+    <link rel="stylesheet" href="./css/styles.css?v=6" />
   </head>
   <body>
     <header class="app-header">
@@ -197,10 +197,20 @@
           </div>
         </div>
 
+        <div class="selection-bar" id="selection-bar" hidden>
+          <span id="selection-count"></span>
+          <button type="button" class="primary" id="generar-borrador-btn">
+            <span id="icon-check-2"></span> Generar borrador
+          </button>
+        </div>
+
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
+                <th style="width: 1%">
+                  <input type="checkbox" id="select-all-checkbox" aria-label="Seleccionar todas las ventas no facturadas" />
+                </th>
                 <th>Fecha</th>
                 <th>Descripción</th>
                 <th>Cantidad</th>
@@ -222,6 +232,7 @@
       import { createAuthService } from "./js/auth.js";
       import { createVentasService, calcularPrecioTotal, computeStats } from "./js/ventas.js";
       import { icons } from "./js/icons.js";
+      import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
 
       for (const [id, name] of [
         ["icon-store", "store"],
@@ -244,12 +255,16 @@
         ["icon-card-2", "card"],
         ["icon-tag", "tag"],
         ["icon-filter", "filter"],
+        ["icon-check-2", "check"],
       ]) {
         document.getElementById(id).innerHTML = icons[name];
       }
 
       const auth = createAuthService(sb);
-      const ventasService = createVentasService(sb);
+      const ventasService = createVentasService(sb, {
+        functionsUrl: `${LOCAL_SIMPLE_CONFIG.supabaseUrl}/functions/v1`,
+        anonKey: LOCAL_SIMPLE_CONFIG.supabaseAnonKey,
+      });
 
       const session = await auth.requireSession();
       if (!session) {
@@ -415,13 +430,40 @@
 
       const tbody = document.getElementById("ventas-tbody");
       const ventasFooterEl = document.getElementById("ventas-footer");
+      const selectionBar = document.getElementById("selection-bar");
+      const selectionCountEl = document.getElementById("selection-count");
+      const selectAllCheckbox = document.getElementById("select-all-checkbox");
+      const generarBorradorBtn = document.getElementById("generar-borrador-btn");
+
+      // Solo se puede elegir una venta para un borrador manual si todavía
+      // no está reclamada por NINGUNA factura (ni borrador ni emitida) —
+      // es una condición más estricta que "no facturada" (que sí incluye
+      // ventas ya en un borrador pendiente). Ver contracts/generar-borrador-factura.md.
+      const seleccionadas = new Set();
+
+      function actualizarBarraSeleccion() {
+        selectionBar.hidden = seleccionadas.size === 0;
+        selectionCountEl.textContent = `${seleccionadas.size} ${
+          seleccionadas.size === 1 ? "venta seleccionada" : "ventas seleccionadas"
+        }`;
+      }
 
       function renderVentas(ventas) {
         tbody.innerHTML = "";
+        seleccionadas.clear();
+        selectAllCheckbox.checked = false;
+        actualizarBarraSeleccion();
+
         for (const venta of ventas) {
           const facturada = Boolean(venta.factura_id) && venta.facturas?.estado === "emitida";
+          const seleccionable = !venta.factura_id;
           const tr = document.createElement("tr");
           tr.innerHTML = `
+            <td>${
+              seleccionable
+                ? `<input type="checkbox" class="venta-checkbox" data-id="${venta.id}" aria-label="Seleccionar venta" />`
+                : ""
+            }</td>
             <td>${venta.fecha}</td>
             <td>${venta.descripcion}</td>
             <td>${venta.cantidad}</td>
@@ -438,6 +480,59 @@
         }
         ventasFooterEl.textContent = `Mostrando ${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"}`;
       }
+
+      tbody.addEventListener("change", (event) => {
+        const checkbox = event.target.closest(".venta-checkbox");
+        if (!checkbox) return;
+        if (checkbox.checked) {
+          seleccionadas.add(checkbox.dataset.id);
+        } else {
+          seleccionadas.delete(checkbox.dataset.id);
+        }
+        actualizarBarraSeleccion();
+      });
+
+      selectAllCheckbox.addEventListener("change", () => {
+        const checkboxes = tbody.querySelectorAll(".venta-checkbox");
+        for (const checkbox of checkboxes) {
+          checkbox.checked = selectAllCheckbox.checked;
+          if (selectAllCheckbox.checked) {
+            seleccionadas.add(checkbox.dataset.id);
+          } else {
+            seleccionadas.delete(checkbox.dataset.id);
+          }
+        }
+        actualizarBarraSeleccion();
+      });
+
+      generarBorradorBtn.addEventListener("click", async () => {
+        const textoOriginal = generarBorradorBtn.innerHTML;
+        generarBorradorBtn.disabled = true;
+        generarBorradorBtn.textContent = "Generando…";
+        try {
+          const resultado = await ventasService.generarBorradorManual([...seleccionadas]);
+          feedbackEl.hidden = false;
+          if (resultado.facturas_generadas > 0) {
+            feedbackEl.textContent = `Se generó ${resultado.facturas_generadas} ${
+              resultado.facturas_generadas === 1 ? "factura borrador" : "facturas borrador"
+            } (una por modo de pago). Confirmalas desde Facturas.${
+              resultado.ventas_omitidas?.length
+                ? ` ${resultado.ventas_omitidas.length} venta(s) ya no estaban disponibles y no se incluyeron.`
+                : ""
+            }`;
+          } else {
+            feedbackEl.textContent = resultado.message || "No se pudo generar el borrador.";
+          }
+          await cargarVentas();
+          await cargarStats();
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo generar el borrador por un error de conexión. Volvé a intentar.";
+          pageErrorEl.hidden = false;
+        } finally {
+          generarBorradorBtn.disabled = false;
+          generarBorradorBtn.innerHTML = textoOriginal;
+        }
+      });
 
       const pageErrorEl = document.getElementById("page-error");
 

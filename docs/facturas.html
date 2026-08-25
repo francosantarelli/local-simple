@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=5" />
+    <link rel="stylesheet" href="./css/styles.css?v=6" />
   </head>
   <body>
     <header class="app-header">
@@ -46,6 +46,7 @@
             <thead>
               <tr>
                 <th>Período</th>
+                <th>Origen</th>
                 <th>Modo de pago</th>
                 <th>Monto total</th>
                 <th>Estado</th>
@@ -143,6 +144,7 @@
 
           tr.innerHTML = `
             <td>${factura.periodo_desde} — ${factura.periodo_hasta}</td>
+            <td>${factura.origen === "manual" ? "Manual" : "Automática"}</td>
             <td><span class="table-icon-cell">${factura.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
               factura.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
             }</span></td>

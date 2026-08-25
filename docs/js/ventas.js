@@ -81,7 +81,7 @@ export function computeStats(ventas, hoy) {
   return stats;
 }
 
-export function createVentasService(client) {
+export function createVentasService(client, { functionsUrl, anonKey } = {}) {
   return {
     async listarVentas(localId, filtros = {}) {
       let query = client
@@ -142,6 +142,28 @@ export function createVentasService(client) {
         return { data: null, errors: { supabase: error.message } };
       }
       return { data, errors: {} };
+    },
+
+    // Genera un borrador de factura a demanda a partir de una selección
+    // puntual de ventas no facturadas, sin esperar al cron semanal (ver
+    // contracts/generar-borrador-factura.md, modo manual). La lógica de
+    // agrupamiento/autorización vive y está testeada del lado del server;
+    // esto es solo el llamado a la Edge Function.
+    async generarBorradorManual(ventaIds) {
+      const {
+        data: { session },
+      } = await client.auth.getSession();
+
+      const response = await fetch(`${functionsUrl}/generar-borrador-factura`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          apikey: anonKey,
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ venta_ids: ventaIds }),
+      });
+      return response.json();
     },
   };
 }

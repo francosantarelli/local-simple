@@ -80,10 +80,11 @@ Comprobante fiscal ante ARCA, agrupado por local + semana + modo de pago (Key En
 |---|---|---|
 | `id` | uuid, PK | |
 | `local_id` | uuid, not null, FK → `locales.id` | |
-| `periodo_desde` | date, not null | Lunes de la semana facturada |
-| `periodo_hasta` | date, not null | Viernes de la semana facturada |
+| `periodo_desde` | date, not null | Lunes de la semana facturada (`automatico`) o fecha mínima de las ventas elegidas (`manual`) |
+| `periodo_hasta` | date, not null | Viernes de la semana facturada (`automatico`) o fecha máxima de las ventas elegidas (`manual`) |
 | `modo_pago` | enum(`tarjeta`, `efectivo`), not null | Una factura agrupa un solo modo de pago (FR-011) |
 | `monto_total` | numeric(12,2), not null | Suma de `precio_total` de las ventas incluidas |
+| `origen` | enum(`automatico`, `manual`), not null, default `automatico` | `automatico`: generada por el cron semanal. `manual`: un usuario la generó a demanda eligiendo ventas puntuales del listado |
 | `estado` | enum(`borrador`, `emitida`, `rechazada`), not null, default `borrador` | Ver transiciones abajo |
 | `cae` | text, nullable | Código de Autorización Electrónico devuelto por ARCA al emitirse |
 | `motivo_rechazo` | text, nullable | Motivo devuelto por ARCA cuando `estado = 'rechazada'` (contracts/confirmar-factura.md) |
@@ -91,8 +92,13 @@ Comprobante fiscal ante ARCA, agrupado por local + semana + modo de pago (Key En
 | `confirmado_at` | timestamptz, nullable | |
 | `created_at` | timestamptz, default now() | |
 
-**Restricción de unicidad**: `(local_id, periodo_desde, periodo_hasta, modo_pago)` único —
-evita duplicar el borrador de una misma semana/modo de pago (FR-011, SC-003).
+**Restricción de unicidad**: índice único parcial sobre
+`(local_id, periodo_desde, periodo_hasta, modo_pago)` que solo aplica cuando
+`origen = 'automatico'` — evita duplicar el borrador de una misma semana/modo de pago
+(FR-011, SC-003). Las facturas `manual` no compiten por esta restricción: su período es
+un rango arbitrario derivado de la selección del usuario, así que dos tandas manuales
+podrían coincidir en período/modo de pago/local sin ser la misma factura (cada una cubre
+ventas distintas, ya que una venta con `factura_id` no nulo no puede volver a elegirse).
 
 ### Transiciones de estado de `facturas`
 

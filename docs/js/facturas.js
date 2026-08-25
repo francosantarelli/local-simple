@@ -8,7 +8,7 @@ export function createFacturasService(client, { functionsUrl, anonKey }) {
     async listarFacturas(localId) {
       const { data, error } = await client
         .from("facturas")
-        .select("id, periodo_desde, periodo_hasta, modo_pago, monto_total, estado, cae, motivo_rechazo")
+        .select("id, periodo_desde, periodo_hasta, modo_pago, monto_total, estado, cae, motivo_rechazo, origen")
         .eq("local_id", localId)
         .order("periodo_desde", { ascending: false });
       return { data: data ?? [], error };
