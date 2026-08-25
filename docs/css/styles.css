@@ -2,17 +2,26 @@
    ajustes responsive para mobile (FR-003). Sin framework: CSS plano. */
 
 :root {
-  --color-bg: #f7f7f8;
+  --color-bg: #f4f5fb;
   --color-surface: #ffffff;
-  --color-border: #dcdde1;
-  --color-text: #1f2124;
-  --color-muted: #6b7076;
-  --color-primary: #2f6f4f;
+  --color-border: #e4e6f0;
+  --color-text: #1c1f2e;
+  --color-muted: #6b7086;
+  --color-primary: #5b5bf0;
+  --color-primary-dark: #4747d6;
+  --color-primary-tint: #eeeeff;
   --color-primary-contrast: #ffffff;
-  --color-danger: #b3261e;
-  --color-warning: #9a6700;
-  --radius: 8px;
-  --spacing: 16px;
+  --color-danger: #d1373f;
+  --color-danger-tint: #fbe9ea;
+  --color-warning: #a5690a;
+  --color-warning-tint: #fdf1dd;
+  --color-success-tint: #e6f6ee;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --spacing: 20px;
+  --shadow-sm: 0 1px 2px rgba(28, 31, 46, 0.06);
+  --shadow-md: 0 8px 24px -12px rgba(28, 31, 46, 0.18);
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 * {
@@ -21,39 +30,90 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   color: var(--color-text);
   background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
 }
+
+h1,
+h2 {
+  margin: 0 0 var(--spacing);
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+/* Header ------------------------------------------------------------- */
 
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px var(--spacing);
+  padding: 14px var(--spacing);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 10;
   flex-wrap: wrap;
   gap: 8px;
 }
 
+.app-header strong {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-header strong::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--color-primary), #9b8cff);
+}
+
 .app-header nav {
   display: flex;
-  gap: 12px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .app-header nav a {
-  color: var(--color-text);
+  color: var(--color-muted);
   text-decoration: none;
-  padding: 6px 10px;
-  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.app-header nav a:hover,
-.app-header nav a[aria-current="page"] {
+.app-header nav a:hover {
   background: var(--color-bg);
+  color: var(--color-text);
 }
+
+.app-header nav a[aria-current="page"] {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+}
+
+/* Layout --------------------------------------------------------------- */
 
 main.container {
   max-width: 960px;
@@ -65,34 +125,48 @@ main.container {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: var(--spacing);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
   margin-bottom: var(--spacing);
 }
+
+/* Formularios ------------------------------------------------------------ */
 
 form .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 14px;
 }
 
 form label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: var(--color-muted);
 }
 
 form input,
-form select,
-form button {
-  font-size: 1rem;
-  padding: 8px 10px;
+form select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+form input:focus,
+form select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-tint);
 }
 
 form .form-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -100,23 +174,62 @@ form .form-row .field {
   flex: 1 1 160px;
 }
 
+/* Botones ------------------------------------------------------------ */
+
+button {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+
+button:hover {
+  background: var(--color-bg);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 button.primary {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 button.primary:hover {
-  opacity: 0.92;
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
+
+/* Mensajes ------------------------------------------------------------ */
 
 .error-message {
   color: var(--color-danger);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   margin-top: 4px;
 }
+
+#venta-feedback,
+#recovery-message {
+  color: var(--color-primary-dark);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Tablas ------------------------------------------------------------ */
 
 .table-scroll {
   width: 100%;
@@ -129,48 +242,145 @@ table {
   min-width: 640px;
 }
 
-th,
-td {
+thead th {
   text-align: left;
-  padding: 8px 10px;
+  padding: 10px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+thead th:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+thead th:last-child {
+  border-top-right-radius: var(--radius-sm);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+tbody td {
+  text-align: left;
+  padding: 12px;
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
 }
 
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background: var(--color-bg);
+}
+
+tbody button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+/* Filtros ------------------------------------------------------------ */
+
 .filters {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
+  align-items: flex-end;
   margin-bottom: var(--spacing);
 }
 
+/* Badges ------------------------------------------------------------ */
+
 .badge {
-  display: inline-block;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .badge.no-facturada {
-  background: #eee;
+  background: var(--color-bg);
   color: var(--color-muted);
 }
 
 .badge.facturada,
 .badge.emitida {
-  background: #e3f2e8;
-  color: var(--color-primary);
+  background: var(--color-success-tint);
+  color: #1f7a4d;
 }
 
 .badge.borrador {
-  background: #fff3cd;
+  background: var(--color-warning-tint);
   color: var(--color-warning);
 }
 
 .badge.rechazada {
-  background: #fbe4e2;
+  background: var(--color-danger-tint);
   color: var(--color-danger);
+}
+
+/* Pantallas de autenticación (login / recuperar contraseña) --------- */
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing);
+  background: radial-gradient(circle at top, #eceafd 0%, var(--color-bg) 55%);
+}
+
+.auth-shell .container {
+  width: 100%;
+  max-width: 400px;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.auth-brand::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--color-primary), #9b8cff);
+}
+
+.auth-shell .card {
+  text-align: center;
+}
+
+.auth-shell form {
+  text-align: left;
+}
+
+.auth-shell button.primary {
+  width: 100%;
+  padding: 12px 18px;
+  margin-top: 4px;
+}
+
+.auth-shell p:not(.error-message) {
+  color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
 /* Mobile: nav apilada, formularios en una sola columna, tablas siguen
@@ -181,11 +391,19 @@ td {
     align-items: stretch;
   }
 
+  .app-header nav {
+    justify-content: center;
+  }
+
   form .form-row {
     flex-direction: column;
   }
 
   main.container {
-    padding: 12px;
+    padding: 14px;
+  }
+
+  .card {
+    padding: 18px;
   }
 }
