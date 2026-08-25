@@ -91,6 +91,7 @@ svg {
   justify-content: center;
   width: 32px;
   height: 32px;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: var(--color-primary-contrast);
@@ -117,7 +118,8 @@ svg {
 }
 
 .app-header nav a svg {
-  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .app-header nav a:hover {
@@ -166,6 +168,7 @@ svg {
   width: 36px;
   height: 36px;
   padding: 0;
+  overflow: hidden;
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -205,9 +208,19 @@ main.container {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
   border-radius: 999px;
   background: var(--color-primary-tint);
   color: var(--color-primary-dark);
+}
+
+.icon-circle svg,
+.icon-button svg,
+.brand-icon svg {
+  width: 1em;
+  height: 1em;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .icon-circle--sm {
