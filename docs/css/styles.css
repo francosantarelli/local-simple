@@ -640,6 +640,13 @@ tbody tr:hover td {
   min-width: 130px;
 }
 
+/* Los filtros con ícono necesitan más espacio a la izquierda que el
+   padding parejo de arriba, si no el ícono queda tapando el texto. */
+.filters .field-icon-wrap select,
+.filters .field-icon-wrap input {
+  padding-left: 34px;
+}
+
 /* Estado con punto (listado de ventas) ------------------------------- */
 
 .status {
