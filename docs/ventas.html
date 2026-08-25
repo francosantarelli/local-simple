@@ -11,104 +11,191 @@
   </head>
   <body>
     <header class="app-header">
-      <strong>local-simple</strong>
+      <a href="./ventas.html" class="brand">
+        <span class="brand-icon" id="icon-store"></span>
+        local-simple
+      </a>
       <nav>
-        <a href="./ventas.html" aria-current="page">Ventas</a>
-        <a href="./facturas.html">Facturas</a>
-        <a href="#" id="logout-link">Cerrar sesión</a>
+        <a href="./ventas.html" aria-current="page"><span id="icon-cart"></span> Ventas</a>
+        <a href="./facturas.html"><span id="icon-document"></span> Facturas</a>
       </nav>
+      <div class="header-right">
+        <div class="user-chip">
+          <span class="avatar" id="user-avatar"></span>
+          <span id="user-name"></span>
+        </div>
+        <button type="button" class="icon-button" id="logout-link" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <span id="icon-logout"></span>
+        </button>
+      </div>
     </header>
 
     <main class="container">
       <p id="page-error" class="error-message" role="alert" hidden></p>
-      <div class="card">
-        <h1>Cargar venta</h1>
-        <form id="venta-form" novalidate>
-          <div class="form-row">
-            <div class="field">
-              <label for="fecha">Fecha</label>
-              <input id="fecha" name="fecha" type="date" required />
-              <p class="error-message" data-error-for="fecha" hidden></p>
-            </div>
-            <div class="field">
-              <label for="cantidad">Cantidad</label>
-              <input id="cantidad" name="cantidad" type="number" min="0" step="any" required />
-              <p class="error-message" data-error-for="cantidad" hidden></p>
-            </div>
-            <div class="field">
-              <label for="modoPago">Modo de pago</label>
-              <select id="modoPago" name="modoPago" required>
-                <option value="">Elegir…</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-              </select>
-              <p class="error-message" data-error-for="modoPago" hidden></p>
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="field" style="flex: 2 1 260px">
-              <label for="producto">Producto del catálogo (opcional)</label>
-              <select id="producto" name="producto">
-                <option value="">Descripción libre…</option>
-              </select>
-            </div>
-            <div class="field" style="flex: 2 1 260px">
-              <label for="descripcion">Descripción</label>
-              <input id="descripcion" name="descripcion" type="text" required />
-              <p class="error-message" data-error-for="descripcion" hidden></p>
-            </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm" id="icon-trending"></span>
+          <div>
+            <p class="stat-label">Ventas hoy</p>
+            <p class="stat-value" id="stat-hoy-monto">$0</p>
+            <p class="stat-sub" id="stat-hoy-cantidad">0 ventas</p>
           </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label for="precioUnitario">Precio unitario</label>
-              <input id="precioUnitario" name="precioUnitario" type="number" min="0" step="any" required />
-              <p class="error-message" data-error-for="precioUnitario" hidden></p>
-            </div>
-            <div class="field">
-              <label for="precioTotal">Precio total (opcional, se calcula solo)</label>
-              <input id="precioTotal" name="precioTotal" type="number" min="0" step="any" />
-              <p class="error-message" data-error-for="precioTotal" hidden></p>
-            </div>
+        </div>
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm" id="icon-calendar-stat"></span>
+          <div>
+            <p class="stat-label">Este mes</p>
+            <p class="stat-value" id="stat-mes-monto">$0</p>
+            <p class="stat-sub" id="stat-mes-cantidad">0 ventas</p>
           </div>
-
-          <p id="venta-feedback" hidden></p>
-          <button type="submit" class="primary">Guardar venta</button>
-        </form>
+        </div>
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm icon-circle--warning" id="icon-clock"></span>
+          <div>
+            <p class="stat-label">Pendientes</p>
+            <p class="stat-value" id="stat-pendientes">0</p>
+            <p class="stat-sub">por facturar</p>
+          </div>
+        </div>
       </div>
 
       <div class="card">
-        <h2>Ventas</h2>
-        <form id="filtros-form" class="filters" novalidate>
-          <div class="field">
-            <label for="filtroDesde">Desde</label>
-            <input id="filtroDesde" name="desde" type="date" />
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-cart-lg"></span>
+          <div class="card-header-text">
+            <h1>Nueva venta</h1>
+            <p>Registrá una venta rápidamente</p>
           </div>
-          <div class="field">
-            <label for="filtroHasta">Hasta</label>
-            <input id="filtroHasta" name="hasta" type="date" />
+        </div>
+
+        <div class="card-body-row">
+          <div class="card-body-main">
+            <form id="venta-form" novalidate>
+              <div class="form-row">
+                <div class="field">
+                  <label for="fecha">Fecha</label>
+                  <div class="field-icon-wrap"><span id="icon-calendar"></span><input id="fecha" name="fecha" type="date" required /></div>
+                  <p class="error-message" data-error-for="fecha" hidden></p>
+                </div>
+                <div class="field">
+                  <label for="cantidad">Cantidad</label>
+                  <div class="stepper">
+                    <button type="button" id="cantidad-minus" aria-label="Restar uno"><span id="icon-minus"></span></button>
+                    <input id="cantidad" name="cantidad" type="number" min="0" step="any" value="1" required />
+                    <button type="button" id="cantidad-plus" aria-label="Sumar uno"><span id="icon-plus"></span></button>
+                  </div>
+                  <p class="error-message" data-error-for="cantidad" hidden></p>
+                </div>
+                <div class="field">
+                  <label for="modoPago">Medio de pago</label>
+                  <div class="field-icon-wrap">
+                    <span id="icon-card"></span>
+                    <select id="modoPago" name="modoPago" required>
+                      <option value="">Elegir…</option>
+                      <option value="efectivo">Efectivo</option>
+                      <option value="tarjeta">Tarjeta</option>
+                    </select>
+                  </div>
+                  <p class="error-message" data-error-for="modoPago" hidden></p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="field" style="flex: 2 1 260px">
+                  <label for="producto">Producto</label>
+                  <div class="field-icon-wrap">
+                    <span id="icon-search"></span>
+                    <select id="producto">
+                      <option value="">Buscar producto del catálogo…</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field" style="flex: 0 0 auto; align-self: flex-end">
+                  <button type="button" class="link-button" id="toggle-descripcion">+ Venta sin producto del catálogo</button>
+                </div>
+              </div>
+
+              <div class="field" id="descripcion-field" hidden>
+                <label for="descripcion">Descripción</label>
+                <input id="descripcion" name="descripcion" type="text" />
+                <p class="error-message" data-error-for="descripcion" hidden></p>
+              </div>
+
+              <div class="form-row">
+                <div class="field">
+                  <label for="precioUnitario">Precio unitario</label>
+                  <div class="field-icon-wrap currency"><input id="precioUnitario" name="precioUnitario" type="number" min="0" step="any" required /></div>
+                  <p class="error-message" data-error-for="precioUnitario" hidden></p>
+                </div>
+              </div>
+
+              <div class="total-box">
+                <label for="precioTotal">Total de venta</label>
+                <input id="precioTotal" name="precioTotal" type="number" min="0" step="any" />
+                <p class="error-message" data-error-for="precioTotal" hidden></p>
+              </div>
+
+              <p id="venta-feedback" hidden></p>
+              <button type="submit" class="primary"><span id="icon-check"></span> Guardar venta</button>
+            </form>
           </div>
-          <div class="field">
-            <label for="filtroModoPago">Modo de pago</label>
-            <select id="filtroModoPago" name="modoPago">
-              <option value="">Todos</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="tarjeta">Tarjeta</option>
-            </select>
+
+          <div class="illustration" aria-hidden="true">
+            <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+              <rect x="40" y="50" width="120" height="90" rx="14" fill="currentColor" opacity="0.15" />
+              <rect x="55" y="35" width="90" height="30" rx="6" fill="currentColor" opacity="0.35" />
+              <rect x="65" y="70" width="70" height="34" rx="4" fill="currentColor" opacity="0.5" />
+              <circle cx="75" cy="118" r="6" fill="currentColor" opacity="0.6" />
+              <circle cx="95" cy="118" r="6" fill="currentColor" opacity="0.6" />
+              <circle cx="115" cy="118" r="6" fill="currentColor" opacity="0.6" />
+              <circle cx="135" cy="118" r="6" fill="currentColor" opacity="0.6" />
+            </svg>
           </div>
-          <div class="field">
-            <label for="filtroEstado">Estado</label>
-            <select id="filtroEstado" name="estado">
-              <option value="">Todos</option>
-              <option value="no-facturada">No facturada</option>
-              <option value="facturada">Facturada</option>
-            </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-document-lg"></span>
+          <div class="card-header-text">
+            <h2>Ventas</h2>
+            <p>Consultá y filtrá tus ventas registradas</p>
           </div>
-          <div class="field" style="justify-content: flex-end">
-            <button type="submit">Filtrar</button>
+          <div class="card-header-actions">
+            <form id="filtros-form" class="filters" novalidate>
+              <div class="field-icon-wrap">
+                <span id="icon-calendar-2"></span>
+                <label for="filtroDesde" class="sr-only">Desde</label>
+                <input id="filtroDesde" name="desde" type="date" title="Desde" />
+              </div>
+              <div class="field-icon-wrap">
+                <span id="icon-calendar-3"></span>
+                <label for="filtroHasta" class="sr-only">Hasta</label>
+                <input id="filtroHasta" name="hasta" type="date" title="Hasta" />
+              </div>
+              <div class="field-icon-wrap">
+                <span id="icon-card-2"></span>
+                <label for="filtroModoPago" class="sr-only">Modo de pago</label>
+                <select id="filtroModoPago" name="modoPago" title="Modo de pago">
+                  <option value="">Modo de pago</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                </select>
+              </div>
+              <div class="field-icon-wrap">
+                <span id="icon-tag"></span>
+                <label for="filtroEstado" class="sr-only">Estado</label>
+                <select id="filtroEstado" name="estado" title="Estado">
+                  <option value="">Estado</option>
+                  <option value="no-facturada">No facturada</option>
+                  <option value="facturada">Facturada</option>
+                </select>
+              </div>
+              <button type="submit" class="primary"><span id="icon-filter"></span> Filtros</button>
+            </form>
           </div>
-        </form>
+        </div>
 
         <div class="table-scroll">
           <table>
@@ -126,13 +213,40 @@
             <tbody id="ventas-tbody"></tbody>
           </table>
         </div>
+        <p class="table-footer-note" id="ventas-footer"></p>
       </div>
     </main>
 
     <script type="module">
       import { sb } from "./js/supabaseClient.js";
       import { createAuthService } from "./js/auth.js";
-      import { createVentasService } from "./js/ventas.js";
+      import { createVentasService, calcularPrecioTotal, computeStats } from "./js/ventas.js";
+      import { icons } from "./js/icons.js";
+
+      for (const [id, name] of [
+        ["icon-store", "store"],
+        ["icon-cart", "cart"],
+        ["icon-document", "document"],
+        ["icon-logout", "logout"],
+        ["icon-trending", "trendingUp"],
+        ["icon-calendar-stat", "calendar"],
+        ["icon-clock", "clock"],
+        ["icon-cart-lg", "cart"],
+        ["icon-calendar", "calendar"],
+        ["icon-minus", "minus"],
+        ["icon-plus", "plus"],
+        ["icon-card", "card"],
+        ["icon-search", "search"],
+        ["icon-check", "check"],
+        ["icon-document-lg", "document"],
+        ["icon-calendar-2", "calendar"],
+        ["icon-calendar-3", "calendar"],
+        ["icon-card-2", "card"],
+        ["icon-tag", "tag"],
+        ["icon-filter", "filter"],
+      ]) {
+        document.getElementById(id).innerHTML = icons[name];
+      }
 
       const auth = createAuthService(sb);
       const ventasService = createVentasService(sb);
@@ -144,13 +258,15 @@
 
       const { data: profile } = await sb
         .from("profiles")
-        .select("local_id")
+        .select("local_id, username")
         .eq("id", session.user.id)
         .single();
       const localId = profile.local_id;
 
-      document.getElementById("logout-link").addEventListener("click", async (event) => {
-        event.preventDefault();
+      document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
+      document.getElementById("user-name").textContent = profile.username;
+
+      document.getElementById("logout-link").addEventListener("click", async () => {
         await auth.logout();
         window.location.href = "./index.html";
       });
@@ -159,6 +275,7 @@
       const productoSelect = document.getElementById("producto");
       const precioUnitarioInput = document.getElementById("precioUnitario");
       const descripcionInput = document.getElementById("descripcion");
+      const descripcionField = document.getElementById("descripcion-field");
       const { data: productos } = await ventasService.listarProductos(localId);
       const productosPorId = new Map(productos.map((p) => [p.id, p]));
       for (const producto of productos) {
@@ -172,7 +289,56 @@
         if (producto) {
           precioUnitarioInput.value = producto.precio_unitario;
           descripcionInput.value = producto.nombre;
+          recalcularTotal();
         }
+      });
+
+      // Alternar entre elegir un producto del catálogo o cargar una
+      // descripción libre (solo cambia qué campo se ve, FR-007 ya soporta
+      // ambos caminos en ventasService.crearVenta).
+      const toggleDescripcionBtn = document.getElementById("toggle-descripcion");
+      let modoLibre = false;
+      toggleDescripcionBtn.addEventListener("click", () => {
+        modoLibre = !modoLibre;
+        descripcionField.hidden = !modoLibre;
+        if (modoLibre) {
+          productoSelect.value = "";
+          descripcionInput.value = "";
+          toggleDescripcionBtn.textContent = "Elegir producto del catálogo";
+          descripcionInput.focus();
+        } else {
+          descripcionInput.value = "";
+          toggleDescripcionBtn.textContent = "+ Venta sin producto del catálogo";
+        }
+      });
+
+      // Cantidad: stepper +/-.
+      const cantidadInput = document.getElementById("cantidad");
+      document.getElementById("cantidad-minus").addEventListener("click", () => {
+        cantidadInput.value = Math.max(1, Number(cantidadInput.value || 1) - 1);
+        recalcularTotal();
+      });
+      document.getElementById("cantidad-plus").addEventListener("click", () => {
+        cantidadInput.value = Number(cantidadInput.value || 0) + 1;
+        recalcularTotal();
+      });
+
+      // Total: se recalcula solo (FR-005) salvo que el usuario lo haya
+      // tocado a mano (permite ajustes manuales, ej. descuentos).
+      const precioTotalInput = document.getElementById("precioTotal");
+      let totalEditadoManualmente = false;
+      function recalcularTotal() {
+        if (totalEditadoManualmente) return;
+        const cantidad = Number(cantidadInput.value);
+        const precioUnitario = Number(precioUnitarioInput.value);
+        if (cantidad > 0 && precioUnitario > 0) {
+          precioTotalInput.value = calcularPrecioTotal(cantidad, precioUnitario);
+        }
+      }
+      cantidadInput.addEventListener("input", recalcularTotal);
+      precioUnitarioInput.addEventListener("input", recalcularTotal);
+      precioTotalInput.addEventListener("input", () => {
+        totalEditadoManualmente = true;
       });
 
       const form = document.getElementById("venta-form");
@@ -186,6 +352,14 @@
       }
 
       function mostrarErrores(errors) {
+        if (errors.descripcion && descripcionField.hidden) {
+          // El campo de descripción libre está oculto (modo catálogo): sin
+          // esto, el mensaje de error quedaría invisible dentro del div
+          // oculto y el usuario no entendería por qué no se guardó.
+          modoLibre = true;
+          descripcionField.hidden = false;
+          toggleDescripcionBtn.textContent = "Elegir producto del catálogo";
+        }
         for (const [campo, mensaje] of Object.entries(errors)) {
           const el = form.querySelector(`[data-error-for="${campo}"]`);
           if (el) {
@@ -228,13 +402,19 @@
         }
 
         form.reset();
+        cantidadInput.value = 1;
+        totalEditadoManualmente = false;
+        descripcionField.hidden = true;
+        modoLibre = false;
+        toggleDescripcionBtn.textContent = "+ Venta sin producto del catálogo";
         feedbackEl.textContent = "Venta guardada.";
         feedbackEl.hidden = false;
         await cargarVentas();
+        await cargarStats();
       });
 
       const tbody = document.getElementById("ventas-tbody");
-      const filtrosForm = document.getElementById("filtros-form");
+      const ventasFooterEl = document.getElementById("ventas-footer");
 
       function renderVentas(ventas) {
         tbody.innerHTML = "";
@@ -247,13 +427,16 @@
             <td>${venta.cantidad}</td>
             <td>$${venta.precio_unitario}</td>
             <td>$${venta.precio_total}</td>
-            <td>${venta.modo_pago}</td>
-            <td><span class="badge ${facturada ? "facturada" : "no-facturada"}">${
+            <td><span class="table-icon-cell">${venta.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
+              venta.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
+            }</span></td>
+            <td><span class="status ${facturada ? "facturada" : "no-facturada"}">${icons.dot} ${
               facturada ? "Facturada" : "No facturada"
             }</span></td>
           `;
           tbody.appendChild(tr);
         }
+        ventasFooterEl.textContent = `Mostrando ${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"}`;
       }
 
       const pageErrorEl = document.getElementById("page-error");
@@ -275,12 +458,31 @@
         }
       }
 
+      // Tarjetas de resumen: siempre sobre el total de ventas del local,
+      // independiente de los filtros del listado de abajo.
+      async function cargarStats() {
+        const { data } = await ventasService.listarVentas(localId, {});
+        const hoy = new Date().toISOString().slice(0, 10);
+        const stats = computeStats(data, hoy);
+        document.getElementById("stat-hoy-monto").textContent = `$${stats.hoy.monto}`;
+        document.getElementById("stat-hoy-cantidad").textContent = `${stats.hoy.cantidad} ${
+          stats.hoy.cantidad === 1 ? "venta" : "ventas"
+        }`;
+        document.getElementById("stat-mes-monto").textContent = `$${stats.mes.monto}`;
+        document.getElementById("stat-mes-cantidad").textContent = `${stats.mes.cantidad} ${
+          stats.mes.cantidad === 1 ? "venta" : "ventas"
+        }`;
+        document.getElementById("stat-pendientes").textContent = stats.pendientes;
+      }
+
+      const filtrosForm = document.getElementById("filtros-form");
       filtrosForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         await cargarVentas();
       });
 
       await cargarVentas();
+      await cargarStats();
     </script>
   </body>
 </html>

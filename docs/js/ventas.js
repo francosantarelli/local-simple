@@ -47,6 +47,40 @@ export function filtrarPorEstadoFacturacion(ventas, estado) {
   return ventas;
 }
 
+// Agregados para las tarjetas de resumen del dashboard. `hoy` recibe la
+// fecha de referencia como string 'YYYY-MM-DD' (inyectada para poder
+// testear sin depender del reloj real).
+export function computeStats(ventas, hoy) {
+  const mesActual = hoy.slice(0, 7); // 'YYYY-MM'
+
+  const stats = {
+    hoy: { monto: 0, cantidad: 0 },
+    mes: { monto: 0, cantidad: 0 },
+    pendientes: 0,
+  };
+
+  for (const venta of ventas) {
+    const monto = Number(venta.precio_total);
+
+    if (venta.fecha === hoy) {
+      stats.hoy.monto += monto;
+      stats.hoy.cantidad += 1;
+    }
+    if (venta.fecha.slice(0, 7) === mesActual) {
+      stats.mes.monto += monto;
+      stats.mes.cantidad += 1;
+    }
+    if (!estaFacturada(venta)) {
+      stats.pendientes += 1;
+    }
+  }
+
+  stats.hoy.monto = Math.round(stats.hoy.monto * 100) / 100;
+  stats.mes.monto = Math.round(stats.mes.monto * 100) / 100;
+
+  return stats;
+}
+
 export function createVentasService(client) {
   return {
     async listarVentas(localId, filtros = {}) {

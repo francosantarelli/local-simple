@@ -11,18 +11,36 @@
   </head>
   <body>
     <header class="app-header">
-      <strong>local-simple</strong>
+      <a href="./ventas.html" class="brand">
+        <span class="brand-icon" id="icon-store"></span>
+        local-simple
+      </a>
       <nav>
-        <a href="./ventas.html">Ventas</a>
-        <a href="./facturas.html" aria-current="page">Facturas</a>
-        <a href="#" id="logout-link">Cerrar sesión</a>
+        <a href="./ventas.html"><span id="icon-cart"></span> Ventas</a>
+        <a href="./facturas.html" aria-current="page"><span id="icon-document"></span> Facturas</a>
       </nav>
+      <div class="header-right">
+        <div class="user-chip">
+          <span class="avatar" id="user-avatar"></span>
+          <span id="user-name"></span>
+        </div>
+        <button type="button" class="icon-button" id="logout-link" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <span id="icon-logout"></span>
+        </button>
+      </div>
     </header>
 
     <main class="container">
       <p id="page-error" class="error-message" role="alert" hidden></p>
+
       <div class="card">
-        <h1>Facturas</h1>
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-document-lg"></span>
+          <div class="card-header-text">
+            <h1>Facturas</h1>
+            <p>Facturas generadas para tu local y su estado ante ARCA</p>
+          </div>
+        </div>
         <div class="table-scroll">
           <table>
             <thead>
@@ -38,10 +56,17 @@
             <tbody id="facturas-tbody"></tbody>
           </table>
         </div>
+        <p class="table-footer-note" id="facturas-footer"></p>
       </div>
 
       <div class="card" id="detalle-card" hidden>
-        <h2>Detalle de factura</h2>
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-tag-lg"></span>
+          <div class="card-header-text">
+            <h2>Detalle de factura</h2>
+            <p>Ventas incluidas en esta factura</p>
+          </div>
+        </div>
         <div class="table-scroll">
           <table>
             <thead>
@@ -64,6 +89,18 @@
       import { createAuthService } from "./js/auth.js";
       import { createFacturasService } from "./js/facturas.js";
       import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
+      import { icons } from "./js/icons.js";
+
+      for (const [id, name] of [
+        ["icon-store", "store"],
+        ["icon-cart", "cart"],
+        ["icon-document", "document"],
+        ["icon-logout", "logout"],
+        ["icon-document-lg", "document"],
+        ["icon-tag-lg", "tag"],
+      ]) {
+        document.getElementById(id).innerHTML = icons[name];
+      }
 
       const auth = createAuthService(sb);
       const session = await auth.requireSession();
@@ -71,18 +108,20 @@
         window.location.href = "./index.html";
       }
 
-      document.getElementById("logout-link").addEventListener("click", async (event) => {
-        event.preventDefault();
+      document.getElementById("logout-link").addEventListener("click", async () => {
         await auth.logout();
         window.location.href = "./index.html";
       });
 
       const { data: profile } = await sb
         .from("profiles")
-        .select("local_id")
+        .select("local_id, username")
         .eq("id", session.user.id)
         .single();
       const localId = profile.local_id;
+
+      document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
+      document.getElementById("user-name").textContent = profile.username;
 
       const facturasService = createFacturasService(sb, {
         functionsUrl: `${LOCAL_SIMPLE_CONFIG.supabaseUrl}/functions/v1`,
@@ -90,6 +129,7 @@
       });
 
       const tbody = document.getElementById("facturas-tbody");
+      const facturasFooterEl = document.getElementById("facturas-footer");
       const detalleCard = document.getElementById("detalle-card");
       const detalleTbody = document.getElementById("detalle-tbody");
 
@@ -103,7 +143,9 @@
 
           tr.innerHTML = `
             <td>${factura.periodo_desde} — ${factura.periodo_hasta}</td>
-            <td>${factura.modo_pago}</td>
+            <td><span class="table-icon-cell">${factura.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
+              factura.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
+            }</span></td>
             <td>$${factura.monto_total}</td>
             <td><span class="badge ${factura.estado}">${factura.estado}</span></td>
             <td>${caeOMotivo}</td>
@@ -118,6 +160,7 @@
           `;
           tbody.appendChild(tr);
         }
+        facturasFooterEl.textContent = `Mostrando ${facturas.length} ${facturas.length === 1 ? "factura" : "facturas"}`;
       }
 
       const pageErrorEl = document.getElementById("page-error");

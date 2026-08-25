@@ -2,25 +2,24 @@
    ajustes responsive para mobile (FR-003). Sin framework: CSS plano. */
 
 :root {
-  --color-bg: #f4f5fb;
+  --color-bg: #f5f8f6;
   --color-surface: #ffffff;
-  --color-border: #e4e6f0;
-  --color-text: #1c1f2e;
-  --color-muted: #6b7086;
-  --color-primary: #5b5bf0;
-  --color-primary-dark: #4747d6;
-  --color-primary-tint: #eeeeff;
+  --color-border: #e5e9e7;
+  --color-text: #1a1f1c;
+  --color-muted: #6b756f;
+  --color-primary: #17915a;
+  --color-primary-dark: #12703f;
+  --color-primary-tint: #e3f5ea;
   --color-primary-contrast: #ffffff;
   --color-danger: #d1373f;
   --color-danger-tint: #fbe9ea;
-  --color-warning: #a5690a;
+  --color-warning: #b5720a;
   --color-warning-tint: #fdf1dd;
-  --color-success-tint: #e6f6ee;
   --radius: 12px;
   --radius-sm: 8px;
   --spacing: 20px;
-  --shadow-sm: 0 1px 2px rgba(28, 31, 46, 0.06);
-  --shadow-md: 0 8px 24px -12px rgba(28, 31, 46, 0.18);
+  --shadow-sm: 0 1px 2px rgba(20, 30, 24, 0.06);
+  --shadow-md: 0 8px 24px -12px rgba(20, 30, 24, 0.2);
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -38,20 +37,25 @@ body {
 
 h1,
 h2 {
-  margin: 0 0 var(--spacing);
+  margin: 0;
   letter-spacing: -0.01em;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
 }
 
 h2 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 
 a {
   color: var(--color-primary);
+}
+
+svg {
+  width: 1em;
+  height: 1em;
 }
 
 /* Header ------------------------------------------------------------- */
@@ -60,31 +64,37 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px var(--spacing);
+  padding: 12px var(--spacing);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 10;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
 }
 
-.app-header strong {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
+  font-size: 1.1rem;
   letter-spacing: -0.01em;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.brand-icon {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-
-.app-header strong::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: linear-gradient(135deg, var(--color-primary), #9b8cff);
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-primary-contrast);
+  font-size: 1.1rem;
 }
 
 .app-header nav {
@@ -94,6 +104,9 @@ a {
 }
 
 .app-header nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--color-muted);
   text-decoration: none;
   font-weight: 500;
@@ -101,6 +114,10 @@ a {
   padding: 8px 14px;
   border-radius: 999px;
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-header nav a svg {
+  font-size: 1rem;
 }
 
 .app-header nav a:hover {
@@ -113,10 +130,61 @@ a {
   color: var(--color-primary-dark);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.icon-button:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.icon-button svg {
+  font-size: 1.1rem;
+}
+
 /* Layout --------------------------------------------------------------- */
 
 main.container {
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: var(--spacing);
 }
@@ -128,6 +196,130 @@ main.container {
   box-shadow: var(--shadow-sm);
   padding: 24px;
   margin-bottom: var(--spacing);
+}
+
+/* Icon circles --------------------------------------------------------- */
+
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+}
+
+.icon-circle--sm {
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+}
+
+.icon-circle--lg {
+  width: 52px;
+  height: 52px;
+  font-size: 1.4rem;
+}
+
+.icon-circle--warning {
+  background: var(--color-warning-tint);
+  color: var(--color-warning);
+}
+
+/* Stat cards ------------------------------------------------------------ */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: var(--spacing);
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+}
+
+.stat-card .stat-label {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0 0 2px;
+}
+
+.stat-card .stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stat-card .stat-sub {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* Encabezado de card con ícono + título + subtítulo --------------------- */
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: var(--spacing);
+  flex-wrap: wrap;
+}
+
+.card-header .card-header-text {
+  flex: 1 1 auto;
+}
+
+.card-header p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.card-body-row {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.card-body-row > .card-body-main {
+  flex: 2 1 420px;
+}
+
+/* Ilustración decorativa ------------------------------------------------ */
+
+.illustration {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  border-radius: var(--radius);
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+}
+
+.illustration svg {
+  width: 70%;
+  height: auto;
 }
 
 /* Formularios ------------------------------------------------------------ */
@@ -147,6 +339,7 @@ form label {
 
 form input,
 form select {
+  width: 100%;
   font-family: inherit;
   font-size: 0.95rem;
   padding: 10px 12px;
@@ -174,9 +367,126 @@ form .form-row .field {
   flex: 1 1 160px;
 }
 
+/* Input con ícono a la izquierda (fecha, medio de pago, producto, $) --- */
+
+.field-icon-wrap {
+  position: relative;
+}
+
+.field-icon-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+  pointer-events: none;
+}
+
+.field-icon-wrap input,
+.field-icon-wrap select {
+  padding-left: 36px;
+}
+
+.field-icon-wrap.currency::before {
+  content: "$";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.field-icon-wrap.currency input {
+  padding-left: 26px;
+}
+
+/* Stepper de cantidad ---------------------------------------------------- */
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.stepper button {
+  border: none;
+  border-radius: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  width: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.stepper input {
+  border: none;
+  border-radius: 0;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stepper input:focus {
+  box-shadow: none;
+}
+
+/* Total destacado --------------------------------------------------------- */
+
+.total-box {
+  background: var(--color-primary-tint);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.total-box label {
+  color: var(--color-primary-dark);
+}
+
+.total-box input {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.total-box input:focus {
+  box-shadow: none;
+}
+
+/* Toggle de descripción libre --------------------------------------------- */
+
+.link-button {
+  border: 1px dashed var(--color-border);
+  background: transparent;
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.link-button:hover {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary);
+}
+
 /* Botones ------------------------------------------------------------ */
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
@@ -279,22 +589,67 @@ tbody tr:hover td {
   background: var(--color-bg);
 }
 
-tbody button {
-  padding: 6px 12px;
+.table-icon-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+}
+
+.table-icon-cell svg {
+  font-size: 1rem;
+}
+
+.table-footer-note {
+  margin: 14px 2px 0;
   font-size: 0.85rem;
+  color: var(--color-muted);
 }
 
 /* Filtros ------------------------------------------------------------ */
 
 .filters {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   flex-wrap: wrap;
-  align-items: flex-end;
-  margin-bottom: var(--spacing);
+  align-items: center;
 }
 
-/* Badges ------------------------------------------------------------ */
+.filters .field {
+  margin-bottom: 0;
+}
+
+.filters select,
+.filters input {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  min-width: 130px;
+}
+
+/* Estado con punto (listado de ventas) ------------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status svg {
+  font-size: 8px;
+}
+
+.status.facturada {
+  color: var(--color-primary-dark);
+}
+
+.status.no-facturada {
+  color: var(--color-warning);
+}
+
+/* Badges (facturas: borrador / emitida / rechazada) -------------------- */
 
 .badge {
   display: inline-flex;
@@ -305,15 +660,9 @@ tbody button {
   font-weight: 700;
 }
 
-.badge.no-facturada {
-  background: var(--color-bg);
-  color: var(--color-muted);
-}
-
-.badge.facturada,
 .badge.emitida {
-  background: var(--color-success-tint);
-  color: #1f7a4d;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
 }
 
 .badge.borrador {
@@ -334,7 +683,7 @@ tbody button {
   align-items: center;
   justify-content: center;
   padding: var(--spacing);
-  background: radial-gradient(circle at top, #eceafd 0%, var(--color-bg) 55%);
+  background: radial-gradient(circle at top, var(--color-primary-tint) 0%, var(--color-bg) 55%);
 }
 
 .auth-shell .container {
@@ -355,15 +704,6 @@ tbody button {
   letter-spacing: -0.01em;
 }
 
-.auth-brand::before {
-  content: "";
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, var(--color-primary), #9b8cff);
-}
-
 .auth-shell .card {
   text-align: center;
 }
@@ -381,6 +721,18 @@ tbody button {
 .auth-shell p:not(.error-message) {
   color: var(--color-muted);
   font-size: 0.9rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Mobile: nav apilada, formularios en una sola columna, tablas siguen
@@ -405,5 +757,14 @@ tbody button {
 
   .card {
     padding: 18px;
+  }
+
+  .illustration {
+    display: none;
+  }
+
+  .card-header-actions {
+    margin-left: 0;
+    width: 100%;
   }
 }
