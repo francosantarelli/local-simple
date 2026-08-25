@@ -6,7 +6,7 @@ el plan técnico y las decisiones de diseño completas.
 
 ## Configuración
 
-### Frontend (`frontend/js/config.js`)
+### Frontend (`docs/js/config.js`)
 
 Editar con la URL y anon key del proyecto Supabase real:
 
@@ -70,10 +70,10 @@ TEST_SUPABASE_ANON_KEY=...
 
 (`supabase status` muestra estos valores para el stack local.)
 
-Servir `frontend/` con cualquier servidor estático (sin build):
+Servir `docs/` con cualquier servidor estático (sin build):
 
 ```sh
-npx serve frontend/
+npx serve docs/
 ```
 
 ## Estado conocido / pendiente

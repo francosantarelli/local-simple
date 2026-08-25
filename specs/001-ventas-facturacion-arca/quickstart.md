@@ -12,7 +12,7 @@ Guía para validar el flujo completo end-to-end una vez implementada la feature.
 - Certificado y clave privada de ARCA cargados como secretos de las Edge Functions (nunca en
   el repo ni en el cliente — Principio IV), apuntando al ambiente de **homologación** de ARCA
   para pruebas.
-- Frontend estático servido localmente (sin build, `npx serve frontend/` o similar).
+- Frontend estático servido localmente (sin build, `npx serve docs/` o similar).
 
 ## 1. Sembrar datos base (fuera del alcance de la app, alta manual)
 

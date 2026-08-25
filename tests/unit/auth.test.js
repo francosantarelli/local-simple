@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { usernameToSyntheticEmail, createAuthService } from "../../frontend/js/auth.js";
+import { usernameToSyntheticEmail, createAuthService } from "../../docs/js/auth.js";
 
 describe("usernameToSyntheticEmail", () => {
   it("deriva un email interno determinístico a partir del username", () => {

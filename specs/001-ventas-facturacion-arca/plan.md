@@ -59,7 +59,7 @@ concurrentes por local, volumen de ventas bajo/moderado propio de un comercio in
 | III. Historial reversible | PASS (proceso, no arquitectura) — cada tarea de `/speckit-tasks` se commitea atómicamente al completarse. |
 | IV. Credenciales fiscales fuera del cliente | PASS — certificado/clave de ARCA viven como secretos de Edge Functions (research.md §1-2); el frontend nunca los recibe ni los loguea. |
 | V. Integridad de datos fiscales | PASS — `facturas.estado = 'emitida'` es terminal e inmutable; ventas con `factura_id` apuntando a una factura emitida no se editan ni eliminan (data-model.md, FR-015); trazabilidad vía `usuario_id`, `confirmado_por`, `created_at`. |
-| Restricciones técnicas (frontend/backend/ARCA/tests) | PASS — ver Technical Context, coincide exactamente con lo fijado en la constitution. |
+| Restricciones técnicas (docs/backend/ARCA/tests) | PASS — ver Technical Context, coincide exactamente con lo fijado en la constitution. |
 
 Sin violaciones. No aplica Complexity Tracking.
 
@@ -84,7 +84,7 @@ specs/001-ventas-facturacion-arca/
 ### Source Code (repository root)
 
 ```text
-frontend/
+docs/
 ├── index.html            # login
 ├── recuperar-password.html
 ├── ventas.html            # carga + listado/filtro de ventas

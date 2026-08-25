@@ -3,7 +3,7 @@ import {
   estaFacturada,
   filtrarPorEstadoFacturacion,
   createVentasService,
-} from "../../frontend/js/ventas.js";
+} from "../../docs/js/ventas.js";
 
 // Condición compuesta de "facturada" documentada en data-model.md: no
 // alcanza con que factura_id no sea null, la factura asociada tiene que

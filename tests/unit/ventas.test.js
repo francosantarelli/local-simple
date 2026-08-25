@@ -3,7 +3,7 @@ import {
   calcularPrecioTotal,
   validarVenta,
   createVentasService,
-} from "../../frontend/js/ventas.js";
+} from "../../docs/js/ventas.js";
 
 describe("calcularPrecioTotal", () => {
   it("multiplica cantidad por precio unitario", () => {

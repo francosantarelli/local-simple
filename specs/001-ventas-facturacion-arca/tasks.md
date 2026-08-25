@@ -35,7 +35,7 @@ nueva.
 
 **Purpose**: Inicialización del proyecto y estructura base
 
-- [X] T001 Crear la estructura de directorios `frontend/{css,js}`, `supabase/{migrations,functions}`, `tests/{unit,functions}` según [plan.md](./plan.md) Project Structure
+- [X] T001 Crear la estructura de directorios `docs/{css,js}`, `supabase/{migrations,functions}`, `tests/{unit,functions}` según [plan.md](./plan.md) Project Structure
 - [X] T002 Inicializar el proyecto Supabase (`supabase/config.toml` vía Supabase CLI) para desarrollo local
 - [X] T003 [P] Configurar Vitest (`package.json` con script `test`, `vitest.config.js`) apuntando a `tests/unit` y `tests/functions`
 
@@ -49,8 +49,8 @@ nueva.
 
 - [X] T004 Crear migración `supabase/migrations/<timestamp>_init.sql` con las tablas `locales`, `profiles`, `productos`, `ventas`, `facturas`, sus enums, constraints y FKs, según [data-model.md](./data-model.md)
 - [X] T005 Agregar políticas RLS a `supabase/migrations/<timestamp>_init.sql` (o una migración adicional) que restrinjan el acceso a `locales`, `profiles`, `productos`, `ventas` y `facturas` a filas del `local_id` del usuario autenticado, vía `profiles` (research.md §5)
-- [X] T006 [P] Crear `frontend/js/supabaseClient.js` inicializando el cliente JS de Supabase (URL + anon key públicas, sin secretos)
-- [X] T007 [P] Crear `frontend/css/styles.css` con el layout base responsive (breakpoints desktop/mobile) reutilizado por todas las pantallas (FR-003)
+- [X] T006 [P] Crear `docs/js/supabaseClient.js` inicializando el cliente JS de Supabase (URL + anon key públicas, sin secretos)
+- [X] T007 [P] Crear `docs/css/styles.css` con el layout base responsive (breakpoints desktop/mobile) reutilizado por todas las pantallas (FR-003)
 
 **Checkpoint**: Base de datos, RLS, cliente Supabase y estilos base listos — las historias de usuario pueden empezar
 
@@ -70,10 +70,10 @@ nueva.
 
 ### Implementation for User Story 1
 
-- [X] T011 [US1] Implementar `frontend/js/auth.js`: `login(username, password)` (resuelve el email interno sintético y llama `signInWithPassword`), `logout()`, y `requireSession()` como guard reutilizable
-- [X] T012 [US1] Implementar `frontend/index.html`: formulario de login (username + contraseña) con mensaje de error claro ante credenciales inválidas
+- [X] T011 [US1] Implementar `docs/js/auth.js`: `login(username, password)` (resuelve el email interno sintético y llama `signInWithPassword`), `logout()`, y `requireSession()` como guard reutilizable
+- [X] T012 [US1] Implementar `docs/index.html`: formulario de login (username + contraseña) con mensaje de error claro ante credenciales inválidas
 - [X] T013 [P] [US1] Implementar `supabase/functions/recuperar-password/index.ts` según [contracts/recuperar-password.md](./contracts/recuperar-password.md) (lógica separada y testeada en `logic.ts`, envío real vía Resend — research.md §6)
-- [X] T014 [US1] Implementar `frontend/recuperar-password.html`: formulario que invoca la Edge Function `recuperar-password`
+- [X] T014 [US1] Implementar `docs/recuperar-password.html`: formulario que invoca la Edge Function `recuperar-password`
 - [X] T015 [US1] Documentar en `specs/001-ventas-facturacion-arca/quickstart.md` (ya existente) el SQL de ejemplo para sembrar manualmente un local + usuario de prueba, si falta algún detalle al ejecutarlo
 
 **Checkpoint**: US1 funcional y testeable de forma independiente
@@ -92,10 +92,10 @@ nueva.
 
 ### Implementation for User Story 2
 
-- [X] T017 [US2] Implementar `frontend/js/ventas.js`: `crearVenta(data)` con cálculo de `precio_total` por defecto, validación de campos y `insert` en Supabase
-- [X] T018 [US2] Implementar `frontend/ventas.html`: formulario de carga (fecha, cantidad, descripción, precio unitario, precio total, modo de pago) con selector de producto del catálogo del local que autocompleta el precio (FR-007), permitiendo también descripción libre
-- [X] T019 [US2] Implementar en `frontend/js/ventas.js` la carga del catálogo de productos del local (`listarProductos()`, vía RLS) para poblar el selector del formulario
-- [X] T020 [US2] Agregar feedback visual de error en `frontend/ventas.html` cuando falta un campo obligatorio o un valor numérico es inválido (FR-008)
+- [X] T017 [US2] Implementar `docs/js/ventas.js`: `crearVenta(data)` con cálculo de `precio_total` por defecto, validación de campos y `insert` en Supabase
+- [X] T018 [US2] Implementar `docs/ventas.html`: formulario de carga (fecha, cantidad, descripción, precio unitario, precio total, modo de pago) con selector de producto del catálogo del local que autocompleta el precio (FR-007), permitiendo también descripción libre
+- [X] T019 [US2] Implementar en `docs/js/ventas.js` la carga del catálogo de productos del local (`listarProductos()`, vía RLS) para poblar el selector del formulario
+- [X] T020 [US2] Agregar feedback visual de error en `docs/ventas.html` cuando falta un campo obligatorio o un valor numérico es inválido (FR-008)
 
 **Checkpoint**: US1 + US2 funcionales — MVP utilizable (login + carga de ventas)
 
@@ -113,8 +113,8 @@ nueva.
 
 ### Implementation for User Story 3
 
-- [X] T022 [US3] Implementar `frontend/js/ventas.js`: `listarVentas(filtros)` consultando Supabase con los filtros de fecha/modo de pago/estado
-- [X] T023 [US3] Implementar en `frontend/ventas.html` la tabla/lista responsive de ventas y los controles de filtro (fecha, modo de pago, estado)
+- [X] T022 [US3] Implementar `docs/js/ventas.js`: `listarVentas(filtros)` consultando Supabase con los filtros de fecha/modo de pago/estado
+- [X] T023 [US3] Implementar en `docs/ventas.html` la tabla/lista responsive de ventas y los controles de filtro (fecha, modo de pago, estado)
 
 **Checkpoint**: US1-3 funcionales
 
@@ -138,8 +138,8 @@ nueva.
 - [X] T028 [US4] Configurar `pg_cron` semanal (viernes) que invoca `generar-borrador-factura` con la service role key, en `supabase/migrations/20260824000002_cron.sql`
 - [X] T029 [US4] Implementar `supabase/functions/confirmar-factura/index.ts` según [contracts/confirmar-factura.md](./contracts/confirmar-factura.md) (obtención/renovación de TA vía WSAA, solicitud de CAE vía WSFEv1, research.md §1-2 — cliente SOAP en `arcaClient.ts`, no probado contra ARCA real)
 - [X] T030 [US4] Documentar en `supabase/functions/confirmar-factura/README.md` las variables de entorno/secretos requeridos, sin commitear valores reales (Principio IV)
-- [X] T031 [US4] Implementar en `frontend/facturas.html` la vista de borrador con botón "Confirmar y emitir" que invoca `confirmar-factura` y muestra el estado resultante
-- [X] T032 [US4] Bloqueo de edición/eliminación de una venta ya facturada (FR-015): ya impuesto por el trigger `ventas_inmutable_si_facturada` (T004) a nivel de base de datos; no hay UI de edición de ventas en el alcance de esta feature, así que no hace falta réplica de esta lógica en `frontend/js/ventas.js`
+- [X] T031 [US4] Implementar en `docs/facturas.html` la vista de borrador con botón "Confirmar y emitir" que invoca `confirmar-factura` y muestra el estado resultante
+- [X] T032 [US4] Bloqueo de edición/eliminación de una venta ya facturada (FR-015): ya impuesto por el trigger `ventas_inmutable_si_facturada` (T004) a nivel de base de datos; no hay UI de edición de ventas en el alcance de esta feature, así que no hace falta réplica de esta lógica en `docs/js/ventas.js`
 
 **Checkpoint**: US1-4 funcionales — flujo fiscal completo de punta a punta
 
@@ -153,9 +153,9 @@ nueva.
 
 ### Implementation for User Story 5
 
-- [X] T033 [US5] Implementar `frontend/js/facturas.js`: `listarFacturas()` y `detalleFactura(facturaId)` (ventas incluidas)
-- [X] T034 [US5] Implementar en `frontend/facturas.html` el listado de facturas (período, modo de pago, monto total, estado)
-- [X] T035 [US5] Implementar en `frontend/facturas.html` la vista de detalle de una factura con las ventas que incluye
+- [X] T033 [US5] Implementar `docs/js/facturas.js`: `listarFacturas()` y `detalleFactura(facturaId)` (ventas incluidas)
+- [X] T034 [US5] Implementar en `docs/facturas.html` el listado de facturas (período, modo de pago, monto total, estado)
+- [X] T035 [US5] Implementar en `docs/facturas.html` la vista de detalle de una factura con las ventas que incluye
 
 **Checkpoint**: Las 5 historias de usuario funcionales de forma independiente
 
@@ -166,7 +166,7 @@ nueva.
 **Purpose**: Mejoras que atraviesan varias historias
 
 - [X] T036 [P] Revisar el responsive end-to-end en mobile (real o emulado) de las 4 pantallas (`index.html`, `ventas.html`, `facturas.html`, `recuperar-password.html`) contra FR-003/SC-005 — revisión estática (viewport meta, breakpoint 640px, `table-scroll`, `form-row` con `flex-wrap`) en las 4 páginas; no se pudo abrir un navegador/emulador real en este entorno, falta una pasada visual manual antes de dar por validado SC-005
-- [X] T037 [P] Unificar manejo de errores de red/Supabase (mensajes de usuario consistentes) en `frontend/js/auth.js`, `frontend/js/ventas.js`, `frontend/js/facturas.js` — banner de error de página en `ventas.html`/`facturas.html`, try/catch alrededor de las llamadas de red en los 4 HTML
+- [X] T037 [P] Unificar manejo de errores de red/Supabase (mensajes de usuario consistentes) en `docs/js/auth.js`, `docs/js/ventas.js`, `docs/js/facturas.js` — banner de error de página en `ventas.html`/`facturas.html`, try/catch alrededor de las llamadas de red en los 4 HTML
 - [ ] T038 Ejecutar [quickstart.md](./quickstart.md) de punta a punta contra el ambiente de homologación de ARCA y corregir cualquier desvío encontrado — **no ejecutado**: requiere Docker (`supabase start`), un proyecto Supabase real y un certificado de homologación de ARCA, ninguno disponible en este entorno de desarrollo; queda como siguiente paso manual (ver README.md "Estado conocido / pendiente")
 - [X] T039 [P] Documentar en un README de configuración las variables de entorno/secrets requeridos (Supabase URL/anon key, certificado y clave ARCA por local, credenciales WSAA), sin commitear valores reales — [README.md](../../README.md)
 
