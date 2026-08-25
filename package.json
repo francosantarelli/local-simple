@@ -1,0 +1,13 @@
+{
+  "name": "local-simple",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "vitest": "^2.1.4"
+  }
+}

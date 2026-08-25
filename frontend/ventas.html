@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ventas</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <strong>local-simple</strong>
+      <nav>
+        <a href="./ventas.html" aria-current="page">Ventas</a>
+        <a href="./facturas.html">Facturas</a>
+        <a href="#" id="logout-link">Cerrar sesión</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <p id="page-error" class="error-message" role="alert" hidden></p>
+      <div class="card">
+        <h1>Cargar venta</h1>
+        <form id="venta-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="fecha">Fecha</label>
+              <input id="fecha" name="fecha" type="date" required />
+              <p class="error-message" data-error-for="fecha" hidden></p>
+            </div>
+            <div class="field">
+              <label for="cantidad">Cantidad</label>
+              <input id="cantidad" name="cantidad" type="number" min="0" step="any" required />
+              <p class="error-message" data-error-for="cantidad" hidden></p>
+            </div>
+            <div class="field">
+              <label for="modoPago">Modo de pago</label>
+              <select id="modoPago" name="modoPago" required>
+                <option value="">Elegir…</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
+              <p class="error-message" data-error-for="modoPago" hidden></p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field" style="flex: 2 1 260px">
+              <label for="producto">Producto del catálogo (opcional)</label>
+              <select id="producto" name="producto">
+                <option value="">Descripción libre…</option>
+              </select>
+            </div>
+            <div class="field" style="flex: 2 1 260px">
+              <label for="descripcion">Descripción</label>
+              <input id="descripcion" name="descripcion" type="text" required />
+              <p class="error-message" data-error-for="descripcion" hidden></p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="precioUnitario">Precio unitario</label>
+              <input id="precioUnitario" name="precioUnitario" type="number" min="0" step="any" required />
+              <p class="error-message" data-error-for="precioUnitario" hidden></p>
+            </div>
+            <div class="field">
+              <label for="precioTotal">Precio total (opcional, se calcula solo)</label>
+              <input id="precioTotal" name="precioTotal" type="number" min="0" step="any" />
+              <p class="error-message" data-error-for="precioTotal" hidden></p>
+            </div>
+          </div>
+
+          <p id="venta-feedback" hidden></p>
+          <button type="submit" class="primary">Guardar venta</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Ventas</h2>
+        <form id="filtros-form" class="filters" novalidate>
+          <div class="field">
+            <label for="filtroDesde">Desde</label>
+            <input id="filtroDesde" name="desde" type="date" />
+          </div>
+          <div class="field">
+            <label for="filtroHasta">Hasta</label>
+            <input id="filtroHasta" name="hasta" type="date" />
+          </div>
+          <div class="field">
+            <label for="filtroModoPago">Modo de pago</label>
+            <select id="filtroModoPago" name="modoPago">
+              <option value="">Todos</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="tarjeta">Tarjeta</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filtroEstado">Estado</label>
+            <select id="filtroEstado" name="estado">
+              <option value="">Todos</option>
+              <option value="no-facturada">No facturada</option>
+              <option value="facturada">Facturada</option>
+            </select>
+          </div>
+          <div class="field" style="justify-content: flex-end">
+            <button type="submit">Filtrar</button>
+          </div>
+        </form>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Precio total</th>
+                <th>Modo de pago</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="ventas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { sb } from "./js/supabaseClient.js";
+      import { createAuthService } from "./js/auth.js";
+      import { createVentasService } from "./js/ventas.js";
+
+      const auth = createAuthService(sb);
+      const ventasService = createVentasService(sb);
+
+      const session = await auth.requireSession();
+      if (!session) {
+        window.location.href = "./index.html";
+      }
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("local_id")
+        .eq("id", session.user.id)
+        .single();
+      const localId = profile.local_id;
+
+      document.getElementById("logout-link").addEventListener("click", async (event) => {
+        event.preventDefault();
+        await auth.logout();
+        window.location.href = "./index.html";
+      });
+
+      // Poblar el selector de productos del catálogo del local (FR-007).
+      const productoSelect = document.getElementById("producto");
+      const precioUnitarioInput = document.getElementById("precioUnitario");
+      const descripcionInput = document.getElementById("descripcion");
+      const { data: productos } = await ventasService.listarProductos(localId);
+      const productosPorId = new Map(productos.map((p) => [p.id, p]));
+      for (const producto of productos) {
+        const option = document.createElement("option");
+        option.value = producto.id;
+        option.textContent = `${producto.nombre} — $${producto.precio_unitario}`;
+        productoSelect.appendChild(option);
+      }
+      productoSelect.addEventListener("change", () => {
+        const producto = productosPorId.get(productoSelect.value);
+        if (producto) {
+          precioUnitarioInput.value = producto.precio_unitario;
+          descripcionInput.value = producto.nombre;
+        }
+      });
+
+      const form = document.getElementById("venta-form");
+      const feedbackEl = document.getElementById("venta-feedback");
+
+      function limpiarErrores() {
+        for (const el of form.querySelectorAll("[data-error-for]")) {
+          el.hidden = true;
+          el.textContent = "";
+        }
+      }
+
+      function mostrarErrores(errors) {
+        for (const [campo, mensaje] of Object.entries(errors)) {
+          const el = form.querySelector(`[data-error-for="${campo}"]`);
+          if (el) {
+            el.textContent = mensaje;
+            el.hidden = false;
+          } else {
+            // Errores sin campo asociado (ej. de red/Supabase): feedback general.
+            feedbackEl.textContent = mensaje;
+            feedbackEl.hidden = false;
+          }
+        }
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        limpiarErrores();
+        feedbackEl.hidden = true;
+
+        let errors;
+        try {
+          ({ errors } = await ventasService.crearVenta({
+            localId,
+            usuarioId: session.user.id,
+            productoId: productoSelect.value || null,
+            fecha: form.fecha.value,
+            cantidad: form.cantidad.value,
+            descripcion: descripcionInput.value,
+            precioUnitario: precioUnitarioInput.value,
+            precioTotal: form.precioTotal.value,
+            modoPago: form.modoPago.value,
+          }));
+        } catch (err) {
+          mostrarErrores({ red: "No se pudo guardar la venta por un error de conexión. Volvé a intentar." });
+          return;
+        }
+
+        if (Object.keys(errors).length > 0) {
+          mostrarErrores(errors);
+          return;
+        }
+
+        form.reset();
+        feedbackEl.textContent = "Venta guardada.";
+        feedbackEl.hidden = false;
+        await cargarVentas();
+      });
+
+      const tbody = document.getElementById("ventas-tbody");
+      const filtrosForm = document.getElementById("filtros-form");
+
+      function renderVentas(ventas) {
+        tbody.innerHTML = "";
+        for (const venta of ventas) {
+          const facturada = Boolean(venta.factura_id) && venta.facturas?.estado === "emitida";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${venta.fecha}</td>
+            <td>${venta.descripcion}</td>
+            <td>${venta.cantidad}</td>
+            <td>$${venta.precio_unitario}</td>
+            <td>$${venta.precio_total}</td>
+            <td>${venta.modo_pago}</td>
+            <td><span class="badge ${facturada ? "facturada" : "no-facturada"}">${
+              facturada ? "Facturada" : "No facturada"
+            }</span></td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      const pageErrorEl = document.getElementById("page-error");
+
+      async function cargarVentas() {
+        try {
+          const { data, error } = await ventasService.listarVentas(localId, {
+            desde: filtrosForm.desde.value || undefined,
+            hasta: filtrosForm.hasta.value || undefined,
+            modoPago: filtrosForm.modoPago.value || undefined,
+            estado: filtrosForm.estado.value || undefined,
+          });
+          if (error) throw error;
+          pageErrorEl.hidden = true;
+          renderVentas(data);
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo cargar el listado de ventas. Volvé a intentar en unos segundos.";
+          pageErrorEl.hidden = false;
+        }
+      }
+
+      filtrosForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await cargarVentas();
+      });
+
+      await cargarVentas();
+    </script>
+  </body>
+</html>

@@ -1,7 +1,19 @@
 node_modules/
-.next/
 .env
 .env.local
+.env.*.local
 *.db
 *.db-journal
 .claude/settings.local.json
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# Test/coverage output
+coverage/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.log

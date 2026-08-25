@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Facturas</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <strong>local-simple</strong>
+      <nav>
+        <a href="./ventas.html">Ventas</a>
+        <a href="./facturas.html" aria-current="page">Facturas</a>
+        <a href="#" id="logout-link">Cerrar sesión</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <p id="page-error" class="error-message" role="alert" hidden></p>
+      <div class="card">
+        <h1>Facturas</h1>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Modo de pago</th>
+                <th>Monto total</th>
+                <th>Estado</th>
+                <th>CAE / motivo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="facturas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" id="detalle-card" hidden>
+        <h2>Detalle de factura</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Precio total</th>
+              </tr>
+            </thead>
+            <tbody id="detalle-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { sb } from "./js/supabaseClient.js";
+      import { createAuthService } from "./js/auth.js";
+      import { createFacturasService } from "./js/facturas.js";
+      import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
+
+      const auth = createAuthService(sb);
+      const session = await auth.requireSession();
+      if (!session) {
+        window.location.href = "./index.html";
+      }
+
+      document.getElementById("logout-link").addEventListener("click", async (event) => {
+        event.preventDefault();
+        await auth.logout();
+        window.location.href = "./index.html";
+      });
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("local_id")
+        .eq("id", session.user.id)
+        .single();
+      const localId = profile.local_id;
+
+      const facturasService = createFacturasService(sb, {
+        functionsUrl: `${LOCAL_SIMPLE_CONFIG.supabaseUrl}/functions/v1`,
+        anonKey: LOCAL_SIMPLE_CONFIG.supabaseAnonKey,
+      });
+
+      const tbody = document.getElementById("facturas-tbody");
+      const detalleCard = document.getElementById("detalle-card");
+      const detalleTbody = document.getElementById("detalle-tbody");
+
+      function renderFacturas(facturas) {
+        tbody.innerHTML = "";
+        for (const factura of facturas) {
+          const tr = document.createElement("tr");
+          const puedeConfirmar = factura.estado === "borrador" || factura.estado === "rechazada";
+          const caeOMotivo =
+            factura.estado === "emitida" ? factura.cae : factura.estado === "rechazada" ? factura.motivo_rechazo ?? "" : "";
+
+          tr.innerHTML = `
+            <td>${factura.periodo_desde} — ${factura.periodo_hasta}</td>
+            <td>${factura.modo_pago}</td>
+            <td>$${factura.monto_total}</td>
+            <td><span class="badge ${factura.estado}">${factura.estado}</span></td>
+            <td>${caeOMotivo}</td>
+            <td>
+              <button type="button" data-action="detalle" data-id="${factura.id}">Ver detalle</button>
+              ${
+                puedeConfirmar
+                  ? `<button type="button" class="primary" data-action="confirmar" data-id="${factura.id}">Confirmar y emitir</button>`
+                  : ""
+              }
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      const pageErrorEl = document.getElementById("page-error");
+
+      async function cargarFacturas() {
+        try {
+          const { data, error } = await facturasService.listarFacturas(localId);
+          if (error) throw error;
+          pageErrorEl.hidden = true;
+          renderFacturas(data);
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo cargar el listado de facturas. Volvé a intentar en unos segundos.";
+          pageErrorEl.hidden = false;
+        }
+      }
+
+      tbody.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const facturaId = button.dataset.id;
+
+        if (button.dataset.action === "detalle") {
+          try {
+            const { data, error } = await facturasService.detalleFactura(facturaId);
+            if (error) throw error;
+            detalleTbody.innerHTML = data
+              .map(
+                (v) => `
+                  <tr>
+                    <td>${v.fecha}</td>
+                    <td>${v.descripcion}</td>
+                    <td>${v.cantidad}</td>
+                    <td>$${v.precio_unitario}</td>
+                    <td>$${v.precio_total}</td>
+                  </tr>
+                `
+              )
+              .join("");
+            detalleCard.hidden = false;
+            detalleCard.scrollIntoView({ behavior: "smooth" });
+          } catch (err) {
+            pageErrorEl.textContent = "No se pudo cargar el detalle de la factura. Volvé a intentar.";
+            pageErrorEl.hidden = false;
+          }
+        }
+
+        if (button.dataset.action === "confirmar") {
+          const textoOriginal = button.textContent;
+          button.disabled = true;
+          button.textContent = "Emitiendo…";
+          try {
+            await facturasService.confirmarFactura(facturaId);
+            await cargarFacturas();
+          } catch (err) {
+            pageErrorEl.textContent = "No se pudo confirmar la factura por un error de conexión. Volvé a intentar.";
+            pageErrorEl.hidden = false;
+            button.disabled = false;
+            button.textContent = textoOriginal;
+          }
+        }
+      });
+
+      await cargarFacturas();
+    </script>
+  </body>
+</html>
