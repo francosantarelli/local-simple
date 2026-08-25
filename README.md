@@ -41,13 +41,15 @@ para el límite conocido de un solo local por ahora.
 
 ### Cron semanal
 
-`supabase/migrations/20260824000002_cron.sql` programa el borrador de factura de los
-viernes, pero necesita que se configuren estos settings de base una vez por proyecto (no
-son secretos de Edge Function, son settings de Postgres):
+`supabase/migrations/20260824000002_cron.sql` (y su corrección,
+`20260824000004_cron_fix_vault.sql`) programan el borrador de factura de los viernes. En
+Supabase gestionado (no self-hosted), `alter database ... set app.settings.*` da
+`permission denied` — el service_role_key se lee en cambio desde **Supabase Vault**. Hay
+que crearlo una sola vez por proyecto, corriendo esto en el SQL Editor del dashboard (nunca
+en una migración commiteada):
 
 ```sql
-alter database postgres set app.settings.supabase_functions_url = 'https://<project-ref>.supabase.co/functions/v1';
-alter database postgres set app.settings.service_role_key = '<service-role-key>';
+select vault.create_secret('<service-role-key>', 'service_role_key');
 ```
 
 ## Desarrollo

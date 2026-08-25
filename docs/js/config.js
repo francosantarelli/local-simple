@@ -5,6 +5,6 @@
 // desplegar (nunca poner acá la service role key ni credenciales de ARCA:
 // esas viven solo en los secretos de las Edge Functions, Principio IV).
 export const LOCAL_SIMPLE_CONFIG = {
-  supabaseUrl: "https://YOUR-PROJECT.supabase.co",
-  supabaseAnonKey: "YOUR-ANON-KEY",
+  supabaseUrl: "https://sxqpkgsblkgphfsjcyhd.supabase.co",
+  supabaseAnonKey: "sb_publishable_hfuCxEuNj6GmFCUqy_fwEA_y-3TsAdj",
 };
