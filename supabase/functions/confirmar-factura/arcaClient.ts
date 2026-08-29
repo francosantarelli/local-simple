@@ -1,9 +1,10 @@
 // Cliente WSAA + WSFEv1 de ARCA (ex AFIP) — research.md §1-2. Este módulo
 // hace las llamadas SOAP reales; no tiene tests unitarios porque su
-// correctitud depende de un certificado real (sí probado manualmente
-// contra homologación el 2026-08-29: login WSAA + FECompUltimoAutorizado
-// OK). Validar de nuevo contra homologación si se toca el armado de los
-// requests SOAP antes de pasar a producción.
+// correctitud depende de un certificado real (validado de punta a punta
+// contra homologación el 2026-08-29, incluyendo un FECAESolicitar real que
+// devolvió CAE — ver README.md para el detalle y los bugs que esa prueba
+// destapó). Validar de nuevo contra homologación si se toca el armado de
+// los requests/parseo de respuestas SOAP antes de pasar a producción.
 import forge from "npm:node-forge@1.3.1";
 
 export interface CredencialesArca {
