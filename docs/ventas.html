@@ -103,24 +103,22 @@
               </div>
 
               <div class="form-row">
-                <div class="field" style="flex: 2 1 260px">
-                  <label for="producto">Producto</label>
+                <div class="field" style="flex: 1 1 100%">
+                  <label for="producto">Producto o descripción</label>
                   <div class="field-icon-wrap">
                     <span id="icon-search"></span>
-                    <select id="producto">
-                      <option value="">Buscar producto del catálogo…</option>
-                    </select>
+                    <input
+                      id="producto"
+                      type="text"
+                      list="productos-datalist"
+                      autocomplete="off"
+                      placeholder="Buscar en el catálogo o escribir una descripción…"
+                      required
+                    />
                   </div>
+                  <datalist id="productos-datalist"></datalist>
+                  <p class="error-message" data-error-for="descripcion" hidden></p>
                 </div>
-                <div class="field" style="flex: 0 0 auto; align-self: flex-end">
-                  <button type="button" class="link-button" id="toggle-descripcion">+ Venta sin producto del catálogo</button>
-                </div>
-              </div>
-
-              <div class="field" id="descripcion-field" hidden>
-                <label for="descripcion">Descripción</label>
-                <input id="descripcion" name="descripcion" type="text" />
-                <p class="error-message" data-error-for="descripcion" hidden></p>
               </div>
 
               <div class="form-row">
@@ -288,44 +286,36 @@
         window.location.href = "./index.html";
       });
 
-      // Poblar el selector de productos del catálogo del local (FR-007).
-      const productoSelect = document.getElementById("producto");
+      // Buscador con autocompletado nativo (datalist) del catálogo de
+      // productos del local (FR-007). Si lo tipeado coincide exactamente
+      // con una etiqueta del catálogo, se toma como producto elegido
+      // (autocompleta precio); si no coincide con nada, se usa tal cual
+      // como descripción libre — no hace falta un toggle aparte.
+      const productoInput = document.getElementById("producto");
+      const productosDatalist = document.getElementById("productos-datalist");
       const precioUnitarioInput = document.getElementById("precioUnitario");
-      const descripcionInput = document.getElementById("descripcion");
-      const descripcionField = document.getElementById("descripcion-field");
       const { data: productos } = await ventasService.listarProductos(localId);
-      const productosPorId = new Map(productos.map((p) => [p.id, p]));
+
+      const etiquetaPorProducto = (p) => `${p.nombre} — $${p.precio_unitario}`;
+      const productoPorEtiqueta = new Map(productos.map((p) => [etiquetaPorProducto(p), p]));
       for (const producto of productos) {
         const option = document.createElement("option");
-        option.value = producto.id;
-        option.textContent = `${producto.nombre} — $${producto.precio_unitario}`;
-        productoSelect.appendChild(option);
+        option.value = etiquetaPorProducto(producto);
+        productosDatalist.appendChild(option);
       }
-      productoSelect.addEventListener("change", () => {
-        const producto = productosPorId.get(productoSelect.value);
-        if (producto) {
-          precioUnitarioInput.value = producto.precio_unitario;
-          descripcionInput.value = producto.nombre;
-          recalcularTotal();
-        }
-      });
 
-      // Alternar entre elegir un producto del catálogo o cargar una
-      // descripción libre (solo cambia qué campo se ve, FR-007 ya soporta
-      // ambos caminos en ventasService.crearVenta).
-      const toggleDescripcionBtn = document.getElementById("toggle-descripcion");
-      let modoLibre = false;
-      toggleDescripcionBtn.addEventListener("click", () => {
-        modoLibre = !modoLibre;
-        descripcionField.hidden = !modoLibre;
-        if (modoLibre) {
-          productoSelect.value = "";
-          descripcionInput.value = "";
-          toggleDescripcionBtn.textContent = "Elegir producto del catálogo";
-          descripcionInput.focus();
+      let productoSeleccionado = null;
+      productoInput.addEventListener("input", () => {
+        const match = productoPorEtiqueta.get(productoInput.value);
+        if (match) {
+          productoSeleccionado = match;
+          precioUnitarioInput.value = match.precio_unitario;
+          // Reemplaza la etiqueta completa ("Nombre — $Precio") por el
+          // nombre limpio: eso es lo que se guarda como descripción.
+          productoInput.value = match.nombre;
+          recalcularTotal();
         } else {
-          descripcionInput.value = "";
-          toggleDescripcionBtn.textContent = "+ Venta sin producto del catálogo";
+          productoSeleccionado = null;
         }
       });
 
@@ -369,14 +359,6 @@
       }
 
       function mostrarErrores(errors) {
-        if (errors.descripcion && descripcionField.hidden) {
-          // El campo de descripción libre está oculto (modo catálogo): sin
-          // esto, el mensaje de error quedaría invisible dentro del div
-          // oculto y el usuario no entendería por qué no se guardó.
-          modoLibre = true;
-          descripcionField.hidden = false;
-          toggleDescripcionBtn.textContent = "Elegir producto del catálogo";
-        }
         for (const [campo, mensaje] of Object.entries(errors)) {
           const el = form.querySelector(`[data-error-for="${campo}"]`);
           if (el) {
@@ -400,10 +382,10 @@
           ({ errors } = await ventasService.crearVenta({
             localId,
             usuarioId: session.user.id,
-            productoId: productoSelect.value || null,
+            productoId: productoSeleccionado?.id || null,
             fecha: form.fecha.value,
             cantidad: form.cantidad.value,
-            descripcion: descripcionInput.value,
+            descripcion: productoInput.value,
             precioUnitario: precioUnitarioInput.value,
             precioTotal: form.precioTotal.value,
             modoPago: form.modoPago.value,
@@ -421,9 +403,7 @@
         form.reset();
         cantidadInput.value = 1;
         totalEditadoManualmente = false;
-        descripcionField.hidden = true;
-        modoLibre = false;
-        toggleDescripcionBtn.textContent = "+ Venta sin producto del catálogo";
+        productoSeleccionado = null;
         feedbackEl.textContent = "Venta guardada.";
         feedbackEl.hidden = false;
         await cargarVentas();
