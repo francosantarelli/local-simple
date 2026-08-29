@@ -17,5 +17,18 @@ activa (el alcance inicial de la constitution). Si más adelante hace falta más
 local facturando por su cuenta, hay que moverlos a almacenamiento por local (ej.
 Supabase Vault) en vez de variables de entorno globales — no antes, por el Principio I.
 
-Antes de producción, validar `arcaClient.ts` contra el ambiente de **homologación** de
-ARCA: no fue probado contra un certificado real en este entorno de desarrollo.
+Validado manualmente contra el ambiente de **homologación** de ARCA (2026-08-29): login
+WSAA con certificado real (CUIT 27357665278, alias `analocalsimple`, servicio `wsfe`
+asociado vía WSASS), y `FECAESolicitar` contra WSFEv1 devolvió un CAE real de prueba
+(`Resultado=A`). Esta prueba manual (fuera de `arcaClient.ts`, con `curl`) destapó tres
+problemas que ya están corregidos en el cliente:
+
+1. WSFEv1 exige el header `SOAPAction` correcto por operación (WSAA no lo exige, por
+   eso no se había notado antes).
+2. `CondicionIVAReceptorId` es obligatorio desde la RG 5616/2024 — se envía fijo en `5`
+   (Consumidor Final), consistente con que no se captura CUIT del comprador.
+3. El detalle de `Iva` es obligatorio si `ImpNeto > 0` — se envía con alícuota `3` (0%),
+   consistente con que `ImpIVA` ya se manda en `0`.
+
+Antes de pasar a producción, generar y asociar un certificado de **producción** (WSASS
+es solo para homologación) y repetir la validación contra los endpoints productivos.

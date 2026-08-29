@@ -9,6 +9,9 @@ node_modules/
 *.crt
 *.csr
 *.pfx
+# Carpeta de pruebas manuales contra ARCA (tickets/tokens/requests reales,
+# no solo certificados): directorio entero afuera del repo por las dudas.
+/arca/
 *.db
 *.db-journal
 .claude/settings.local.json

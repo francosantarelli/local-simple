@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=7" />
+    <link rel="stylesheet" href="./css/styles.css?v=8" />
   </head>
   <body>
     <header class="app-header">
@@ -89,14 +89,16 @@
                   <p class="error-message" data-error-for="cantidad" hidden></p>
                 </div>
                 <div class="field">
-                  <label for="modoPago">Medio de pago</label>
-                  <div class="field-icon-wrap">
-                    <span id="icon-card"></span>
-                    <select id="modoPago" name="modoPago" required>
-                      <option value="">Elegir…</option>
-                      <option value="efectivo">Efectivo</option>
-                      <option value="tarjeta">Tarjeta</option>
-                    </select>
+                  <label>Medio de pago</label>
+                  <div class="radio-group" role="radiogroup" aria-label="Medio de pago">
+                    <label class="radio-option">
+                      <input type="radio" name="modoPago" value="efectivo" checked />
+                      <span id="icon-cash-radio"></span> Efectivo
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" name="modoPago" value="tarjeta" />
+                      <span id="icon-card-radio"></span> Tarjeta
+                    </label>
                   </div>
                   <p class="error-message" data-error-for="modoPago" hidden></p>
                 </div>
@@ -246,7 +248,8 @@
         ["icon-calendar", "calendar"],
         ["icon-minus", "minus"],
         ["icon-plus", "plus"],
-        ["icon-card", "card"],
+        ["icon-cash-radio", "cash"],
+        ["icon-card-radio", "card"],
         ["icon-search", "search"],
         ["icon-check", "check"],
         ["icon-document-lg", "document"],
@@ -257,7 +260,8 @@
         ["icon-filter", "filter"],
         ["icon-check-2", "check"],
       ]) {
-        document.getElementById(id).innerHTML = icons[name];
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = icons[name];
       }
 
       const auth = createAuthService(sb);
@@ -318,6 +322,9 @@
           productoSeleccionado = null;
         }
       });
+
+      // Fecha: hoy por defecto (en huso horario local, no UTC), editable.
+      document.getElementById("fecha").value = new Date().toLocaleDateString("en-CA");
 
       // Cantidad: stepper +/-.
       const cantidadInput = document.getElementById("cantidad");
@@ -401,6 +408,7 @@
         }
 
         form.reset();
+        form.fecha.value = new Date().toLocaleDateString("en-CA");
         cantidadInput.value = 1;
         totalEditadoManualmente = false;
         productoSeleccionado = null;

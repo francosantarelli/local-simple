@@ -1,8 +1,9 @@
 // Cliente WSAA + WSFEv1 de ARCA (ex AFIP) — research.md §1-2. Este módulo
 // hace las llamadas SOAP reales; no tiene tests unitarios porque su
-// correctitud depende de un certificado real y del servicio de
-// homologación de ARCA (no disponibles en este entorno). Validar contra
-// homologación antes de pasar a producción.
+// correctitud depende de un certificado real (sí probado manualmente
+// contra homologación el 2026-08-29: login WSAA + FECompUltimoAutorizado
+// OK). Validar de nuevo contra homologación si se toca el armado de los
+// requests SOAP antes de pasar a producción.
 import forge from "npm:node-forge@1.3.1";
 
 export interface CredencialesArca {
@@ -134,7 +135,10 @@ export async function obtenerUltimoComprobanteAutorizado(
 
   const response = await fetch(wsfeUrl, {
     method: "POST",
-    headers: { "Content-Type": "text/xml; charset=utf-8", SOAPAction: "" },
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      SOAPAction: "http://ar.gov.afip.dif.FEV1/FECompUltimoAutorizado",
+    },
     body: soapBody,
   });
   const xml = await response.text();
@@ -142,6 +146,12 @@ export async function obtenerUltimoComprobanteAutorizado(
   return ultimo ? Number(ultimo) : 0;
 }
 
+// CondicionIVAReceptorId=5 (Consumidor Final) e Iva con alícuota 0% son
+// consistentes con la simplificación ya documentada en
+// tipoComprobantePorCondicionIva: no se captura CUIT del comprador ni se
+// discrimina IVA. Ambos campos son obligatorios en WSFEv1 desde la RG
+// 5616/2024 (CondicionIVAReceptorId) y siempre que ImpNeto > 0 (Iva);
+// confirmado contra homologación el 2026-08-29 (ver README.md).
 export async function solicitarCAE(
   wsfeUrl: string,
   ticket: TicketAcceso,
@@ -186,6 +196,14 @@ export async function solicitarCAE(
             <ar:FchVtoPago>${fecha}</ar:FchVtoPago>
             <ar:MonId>PES</ar:MonId>
             <ar:MonCotiz>1</ar:MonCotiz>
+            <ar:CondicionIVAReceptorId>5</ar:CondicionIVAReceptorId>
+            <ar:Iva>
+              <ar:AlicIva>
+                <ar:Id>3</ar:Id>
+                <ar:BaseImp>${importe}</ar:BaseImp>
+                <ar:Importe>0.00</ar:Importe>
+              </ar:AlicIva>
+            </ar:Iva>
           </ar:FECAEDetRequest>
         </ar:FeDetReq>
       </ar:FeCAEReq>
@@ -195,7 +213,10 @@ export async function solicitarCAE(
 
   const response = await fetch(wsfeUrl, {
     method: "POST",
-    headers: { "Content-Type": "text/xml; charset=utf-8", SOAPAction: "" },
+    headers: {
+      "Content-Type": "text/xml; charset=utf-8",
+      SOAPAction: "http://ar.gov.afip.dif.FEV1/FECAESolicitar",
+    },
     body: soapBody,
   });
   const xml = await response.text();

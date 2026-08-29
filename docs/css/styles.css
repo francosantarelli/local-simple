@@ -635,11 +635,39 @@ tbody tr:hover td {
   font-size: 0.9rem;
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
   width: 16px;
   height: 16px;
   accent-color: var(--color-primary);
   cursor: pointer;
+}
+
+.radio-group {
+  display: flex;
+  gap: 8px;
+  height: 41px;
+  align-items: stretch;
+}
+
+.radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.radio-option:has(input:checked) {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  font-weight: 600;
 }
 
 /* Catálogo: chips de categorías, botones de ícono en filas de tabla ---- */
