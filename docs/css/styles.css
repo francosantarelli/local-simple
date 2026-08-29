@@ -642,6 +642,62 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+/* Catálogo: chips de categorías, botones de ícono en filas de tabla ---- */
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 6px 8px 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.chip button:hover {
+  background: var(--color-danger-tint);
+  color: var(--color-danger);
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.row-actions button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.row-actions button.danger:hover {
+  background: var(--color-danger-tint);
+  color: var(--color-danger);
+  border-color: var(--color-danger-tint);
+}
+
 /* Filtros ------------------------------------------------------------ */
 
 .filters {

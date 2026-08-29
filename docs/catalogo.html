@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catálogo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/styles.css?v=7" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="./ventas.html" class="brand">
+        <span class="brand-icon" id="icon-store"></span>
+        local-simple
+      </a>
+      <nav>
+        <a href="./ventas.html"><span id="icon-cart"></span> Ventas</a>
+        <a href="./facturas.html"><span id="icon-document"></span> Facturas</a>
+        <a href="./catalogo.html" aria-current="page"><span id="icon-box"></span> Catálogo</a>
+      </nav>
+      <div class="header-right">
+        <div class="user-chip">
+          <span class="avatar" id="user-avatar"></span>
+          <span id="user-name"></span>
+        </div>
+        <button type="button" class="icon-button" id="logout-link" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <span id="icon-logout"></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <p id="page-error" class="error-message" role="alert" hidden></p>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-tag-lg"></span>
+          <div class="card-header-text">
+            <h2>Categorías</h2>
+            <p>Agrupá tus productos para encontrarlos más rápido al cargar una venta</p>
+          </div>
+        </div>
+
+        <form id="categoria-form" class="form-row" novalidate>
+          <div class="field" style="flex: 2 1 260px">
+            <label for="categoriaDescripcion" class="sr-only">Nombre de la categoría</label>
+            <input id="categoriaDescripcion" type="text" placeholder="Nombre de la categoría" required />
+          </div>
+          <div class="field" style="flex: 0 0 auto; align-self: flex-start">
+            <button type="submit" class="primary"><span id="icon-plus"></span> Agregar</button>
+          </div>
+        </form>
+        <p id="categoria-feedback" class="error-message" hidden></p>
+
+        <div class="chip-list" id="categorias-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-box-lg"></span>
+          <div class="card-header-text">
+            <h1>Productos</h1>
+            <p>Catálogo que se usa para autocompletar el formulario de ventas</p>
+          </div>
+        </div>
+
+        <form id="producto-form" novalidate>
+          <div class="form-row">
+            <div class="field" style="flex: 2 1 220px">
+              <label for="productoNombre">Nombre</label>
+              <input id="productoNombre" type="text" required />
+              <p class="error-message" data-error-for="nombre" hidden></p>
+            </div>
+            <div class="field">
+              <label for="productoPrecio">Precio unitario</label>
+              <div class="field-icon-wrap currency"><input id="productoPrecio" type="number" min="0" step="any" required /></div>
+              <p class="error-message" data-error-for="precioUnitario" hidden></p>
+            </div>
+            <div class="field">
+              <label for="productoCategoria">Categoría</label>
+              <div class="field-icon-wrap">
+                <span id="icon-tag-2"></span>
+                <select id="productoCategoria">
+                  <option value="">Sin categoría</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <p id="producto-feedback" hidden></p>
+          <div style="display: flex; gap: 10px">
+            <button type="submit" class="primary" id="producto-submit-btn">
+              <span id="icon-plus-2"></span> Agregar producto
+            </button>
+            <button type="button" id="cancelar-edicion-btn" hidden>Cancelar edición</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio unitario</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="productos-tbody"></tbody>
+          </table>
+        </div>
+        <p class="table-footer-note" id="productos-footer"></p>
+      </div>
+    </main>
+
+    <script type="module">
+      import { sb } from "./js/supabaseClient.js";
+      import { createAuthService } from "./js/auth.js";
+      import { createProductosService } from "./js/productos.js";
+      import { createCategoriasService } from "./js/categorias.js";
+      import { icons } from "./js/icons.js";
+
+      for (const [id, name] of [
+        ["icon-store", "store"],
+        ["icon-cart", "cart"],
+        ["icon-document", "document"],
+        ["icon-box", "box"],
+        ["icon-logout", "logout"],
+        ["icon-tag-lg", "tag"],
+        ["icon-box-lg", "box"],
+        ["icon-plus", "plus"],
+        ["icon-plus-2", "plus"],
+        ["icon-tag-2", "tag"],
+      ]) {
+        document.getElementById(id).innerHTML = icons[name];
+      }
+
+      const auth = createAuthService(sb);
+      const productosService = createProductosService(sb);
+      const categoriasService = createCategoriasService(sb);
+
+      const session = await auth.requireSession();
+      if (!session) {
+        window.location.href = "./index.html";
+      }
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("local_id, username")
+        .eq("id", session.user.id)
+        .single();
+      const localId = profile.local_id;
+
+      document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
+      document.getElementById("user-name").textContent = profile.username;
+
+      document.getElementById("logout-link").addEventListener("click", async () => {
+        await auth.logout();
+        window.location.href = "./index.html";
+      });
+
+      const pageErrorEl = document.getElementById("page-error");
+
+      // --- Categorías ---------------------------------------------------
+
+      const categoriasListEl = document.getElementById("categorias-list");
+      const categoriaForm = document.getElementById("categoria-form");
+      const categoriaDescripcionInput = document.getElementById("categoriaDescripcion");
+      const categoriaFeedbackEl = document.getElementById("categoria-feedback");
+      const productoCategoriaSelect = document.getElementById("productoCategoria");
+
+      async function cargarCategorias() {
+        const { data } = await categoriasService.listarCategorias(localId);
+
+        categoriasListEl.innerHTML = data
+          .map(
+            (categoria) => `
+              <span class="chip">
+                ${categoria.descripcion}
+                <button type="button" data-action="eliminar-categoria" data-id="${categoria.id}" aria-label="Eliminar categoría">${icons.trash}</button>
+              </span>
+            `
+          )
+          .join("");
+
+        productoCategoriaSelect.innerHTML = '<option value="">Sin categoría</option>';
+        for (const categoria of data) {
+          const option = document.createElement("option");
+          option.value = categoria.id;
+          option.textContent = categoria.descripcion;
+          productoCategoriaSelect.appendChild(option);
+        }
+      }
+
+      categoriaForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        categoriaFeedbackEl.hidden = true;
+        const { errors } = await categoriasService.crearCategoria(localId, categoriaDescripcionInput.value);
+        if (Object.keys(errors).length > 0) {
+          categoriaFeedbackEl.textContent = Object.values(errors)[0];
+          categoriaFeedbackEl.hidden = false;
+          return;
+        }
+        categoriaDescripcionInput.value = "";
+        await cargarCategorias();
+      });
+
+      categoriasListEl.addEventListener("click", async (event) => {
+        const button = event.target.closest('[data-action="eliminar-categoria"]');
+        if (!button) return;
+        if (!confirm("¿Eliminar esta categoría?")) return;
+        const { errors } = await categoriasService.eliminarCategoria(button.dataset.id);
+        if (Object.keys(errors).length > 0) {
+          pageErrorEl.textContent = errors.supabase;
+          pageErrorEl.hidden = false;
+          return;
+        }
+        await cargarCategorias();
+      });
+
+      // --- Productos ---------------------------------------------------
+
+      const productoForm = document.getElementById("producto-form");
+      const productoNombreInput = document.getElementById("productoNombre");
+      const productoPrecioInput = document.getElementById("productoPrecio");
+      const productoFeedbackEl = document.getElementById("producto-feedback");
+      const productoSubmitBtn = document.getElementById("producto-submit-btn");
+      const cancelarEdicionBtn = document.getElementById("cancelar-edicion-btn");
+      const productosTbody = document.getElementById("productos-tbody");
+      const productosFooterEl = document.getElementById("productos-footer");
+
+      let editandoId = null;
+
+      function limpiarErroresProducto() {
+        for (const el of productoForm.querySelectorAll("[data-error-for]")) {
+          el.hidden = true;
+          el.textContent = "";
+        }
+        productoFeedbackEl.hidden = true;
+      }
+
+      function mostrarErroresProducto(errors) {
+        for (const [campo, mensaje] of Object.entries(errors)) {
+          const el = productoForm.querySelector(`[data-error-for="${campo}"]`);
+          if (el) {
+            el.textContent = mensaje;
+            el.hidden = false;
+          } else {
+            productoFeedbackEl.textContent = mensaje;
+            productoFeedbackEl.hidden = false;
+          }
+        }
+      }
+
+      function entrarModoEdicion(producto) {
+        editandoId = producto.id;
+        productoNombreInput.value = producto.nombre;
+        productoPrecioInput.value = producto.precio_unitario;
+        productoCategoriaSelect.value = producto.categoria_id || "";
+        productoSubmitBtn.innerHTML = `${icons.check} Guardar cambios`;
+        cancelarEdicionBtn.hidden = false;
+        productoNombreInput.focus();
+      }
+
+      function salirModoEdicion() {
+        editandoId = null;
+        productoForm.reset();
+        productoSubmitBtn.innerHTML = `${icons.plus} Agregar producto`;
+        cancelarEdicionBtn.hidden = true;
+      }
+
+      cancelarEdicionBtn.addEventListener("click", salirModoEdicion);
+
+      async function cargarProductos() {
+        try {
+          const { data, error } = await productosService.listarProductos(localId);
+          if (error) throw error;
+          pageErrorEl.hidden = true;
+
+          productosTbody.innerHTML = data
+            .map(
+              (producto) => `
+                <tr>
+                  <td>${producto.nombre}</td>
+                  <td>${producto.categorias?.descripcion ?? "—"}</td>
+                  <td>$${producto.precio_unitario}</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" data-action="editar" data-id="${producto.id}" aria-label="Editar">${icons.edit}</button>
+                      <button type="button" class="danger" data-action="eliminar" data-id="${producto.id}" aria-label="Eliminar">${icons.trash}</button>
+                    </div>
+                  </td>
+                </tr>
+              `
+            )
+            .join("");
+          productosFooterEl.textContent = `Mostrando ${data.length} ${data.length === 1 ? "producto" : "productos"}`;
+
+          // Guardamos los datos completos para poblar el form al editar.
+          cargarProductos.ultimaLista = data;
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo cargar el catálogo de productos. Volvé a intentar en unos segundos.";
+          pageErrorEl.hidden = false;
+        }
+      }
+
+      productosTbody.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+        const productoId = button.dataset.id;
+
+        if (button.dataset.action === "editar") {
+          const producto = (cargarProductos.ultimaLista || []).find((p) => p.id === productoId);
+          if (producto) entrarModoEdicion(producto);
+        }
+
+        if (button.dataset.action === "eliminar") {
+          if (!confirm("¿Eliminar este producto del catálogo?")) return;
+          const { errors } = await productosService.eliminarProducto(productoId);
+          if (Object.keys(errors).length > 0) {
+            pageErrorEl.textContent = errors.supabase;
+            pageErrorEl.hidden = false;
+            return;
+          }
+          if (editandoId === productoId) salirModoEdicion();
+          await cargarProductos();
+        }
+      });
+
+      productoForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        limpiarErroresProducto();
+
+        const input = {
+          localId,
+          nombre: productoNombreInput.value,
+          precioUnitario: productoPrecioInput.value,
+          categoriaId: productoCategoriaSelect.value || null,
+        };
+
+        let result;
+        try {
+          result = editandoId
+            ? await productosService.actualizarProducto(editandoId, input)
+            : await productosService.crearProducto(input);
+        } catch (err) {
+          mostrarErroresProducto({ red: "No se pudo guardar por un error de conexión. Volvé a intentar." });
+          return;
+        }
+
+        if (Object.keys(result.errors).length > 0) {
+          mostrarErroresProducto(result.errors);
+          return;
+        }
+
+        salirModoEdicion();
+        await cargarProductos();
+      });
+
+      await cargarCategorias();
+      await cargarProductos();
+    </script>
+  </body>
+</html>

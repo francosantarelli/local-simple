@@ -2,6 +2,13 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Certificados/claves ARCA (Principio IV: nunca commitear valores reales)
+*.key
+*.pem
+*.crt
+*.csr
+*.pfx
 *.db
 *.db-journal
 .claude/settings.local.json

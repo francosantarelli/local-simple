@@ -36,6 +36,18 @@ Extiende `auth.users` de Supabase con los datos propios del Usuario (Key Entity:
 **Regla**: todos los usuarios de un mismo `local_id` tienen los mismos permisos (sin roles
 diferenciados, ver Assumptions de la spec).
 
+## `categorias`
+
+Categoría de productos de un local (ej. "Bebidas", "Indumentaria"). Entidad propia, no un
+enum, para que cada local defina las suyas libremente.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | uuid, PK | |
+| `local_id` | uuid, not null, FK → `locales.id` | Cada local tiene sus propias categorías, aisladas de otros locales |
+| `descripcion` | text, not null | |
+| `created_at` | timestamptz, default now() | |
+
 ## `productos`
 
 Catálogo de productos de un local (Key Entity: Producto).
@@ -44,10 +56,11 @@ Catálogo de productos de un local (Key Entity: Producto).
 |---|---|---|
 | `id` | uuid, PK | |
 | `local_id` | uuid, not null, FK → `locales.id` | |
+| `categoria_id` | uuid, nullable, FK → `categorias.id` | Opcional: un producto puede no tener categoría asignada |
 | `nombre` | text, not null | |
 | `precio_unitario` | numeric(12,2), not null, check > 0 | Precio de referencia, autocompleta al cargar una venta (FR-007) |
 | `created_at` | timestamptz, default now() | |
-| `updated_at` | timestamptz, default now() | |
+| `updated_at` | timestamptz, default now() | Se actualiza solo vía trigger en cada `UPDATE` |
 
 ## `ventas`
 
@@ -130,9 +143,11 @@ compuesta, evitando bloquear edición de ventas que están en un borrador rechaz
 
 ```
 locales 1───N profiles
+locales 1───N categorias
 locales 1───N productos
 locales 1───N ventas
 locales 1───N facturas
+categorias 1───N productos (opcional, categoria_id nullable)
 productos 1───N ventas (opcional, producto_id nullable)
 facturas 1───N ventas (opcional hasta que se genera un borrador)
 profiles 1───N ventas (usuario_id, quién cargó)
