@@ -10,6 +10,7 @@
 // Wiring real de Supabase sobre la lógica pura en ./logic.ts.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { generarBorradoresDeLaSemana, generarBorradorManual } from "./logic.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,7 +25,7 @@ async function manejarModoCron(body: Record<string, unknown>): Promise<Response>
   if (!periodoDesde || !periodoHasta) {
     return new Response(
       JSON.stringify({ message: "Faltan periodo_desde/periodo_hasta." }),
-      { status: 400, headers: { "content-type": "application/json" } }
+      { status: 400, headers: { ...corsHeaders, "content-type": "application/json" } }
     );
   }
 
@@ -81,7 +82,7 @@ async function manejarModoCron(body: Record<string, unknown>): Promise<Response>
 
   return new Response(
     JSON.stringify({ facturas_generadas: resultado.facturasGeneradas }),
-    { status: 200, headers: { "content-type": "application/json" } }
+    { status: 200, headers: { ...corsHeaders, "content-type": "application/json" } }
   );
 }
 
@@ -91,7 +92,7 @@ async function manejarModoManual(req: Request, body: Record<string, unknown>): P
   if (userError || !userData?.user) {
     return new Response(JSON.stringify({ message: "Sin sesión válida." }), {
       status: 401,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 
@@ -103,7 +104,7 @@ async function manejarModoManual(req: Request, body: Record<string, unknown>): P
   if (!profile) {
     return new Response(JSON.stringify({ message: "Usuario sin local asignado." }), {
       status: 403,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 
@@ -111,7 +112,7 @@ async function manejarModoManual(req: Request, body: Record<string, unknown>): P
   if (!Array.isArray(ventaIds) || ventaIds.length === 0) {
     return new Response(JSON.stringify({ message: "Falta venta_ids." }), {
       status: 400,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 
@@ -173,13 +174,16 @@ async function manejarModoManual(req: Request, body: Record<string, unknown>): P
       facturas_generadas: resultado.facturasGeneradas,
       ventas_omitidas: resultado.ventasOmitidas,
     }),
-    { status: 200, headers: { "content-type": "application/json" } }
+    { status: 200, headers: { ...corsHeaders, "content-type": "application/json" } }
   );
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -190,7 +194,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     return new Response(JSON.stringify({ message: (err as Error).message }), {
       status: 500,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 });

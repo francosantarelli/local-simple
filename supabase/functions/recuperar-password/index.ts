@@ -3,6 +3,7 @@
 // Resend sobre la lógica pura y testeada en ./logic.ts.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleRecuperarPassword } from "./logic.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -14,8 +15,11 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
   }
 
   const { username } = await req.json().catch(() => ({ username: null }));
@@ -73,6 +77,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify(result.body), {
     status: result.status,
-    headers: { "content-type": "application/json" },
+    headers: { ...corsHeaders, "content-type": "application/json" },
   });
 });

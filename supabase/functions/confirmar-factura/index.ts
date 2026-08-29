@@ -16,6 +16,7 @@ import {
   tipoComprobantePorCondicionIva,
   type TicketAcceso,
 } from "./arcaClient.ts";
+import { corsHeaders } from "../_shared/cors.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -63,8 +64,11 @@ async function obtenerTicketVigente(localId: string): Promise<TicketAcceso> {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -73,7 +77,7 @@ Deno.serve(async (req) => {
   if (userError || !userData?.user) {
     return new Response(JSON.stringify({ message: "Sin sesión válida." }), {
       status: 401,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 
@@ -87,7 +91,7 @@ Deno.serve(async (req) => {
   if (!facturaId) {
     return new Response(JSON.stringify({ message: "Falta factura_id." }), {
       status: 400,
-      headers: { "content-type": "application/json" },
+      headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
 
@@ -150,6 +154,6 @@ Deno.serve(async (req) => {
 
   return new Response(JSON.stringify(result.body), {
     status: result.status,
-    headers: { "content-type": "application/json" },
+    headers: { ...corsHeaders, "content-type": "application/json" },
   });
 });
