@@ -23,6 +23,18 @@ function extraerTag(xml: string, tag: string): string | null {
   return match ? match[1] : null;
 }
 
+// WSAA devuelve loginCmsReturn como el XML de loginTicketResponse
+// HTML-escapado dentro del sobre SOAP (confirmado contra homologación
+// real el 2026-08-29), así que hay que desescapar antes de buscar tags.
+function desescaparEntidadesXml(texto: string): string {
+  return texto
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 function firmarLoginTicketRequest(xml: string, certPem: string, keyPem: string): string {
   const p7 = forge.pkcs7.createSignedData();
   p7.content = forge.util.createBuffer(xml, "utf8");
@@ -73,7 +85,7 @@ export async function solicitarTicketAcceso(
     headers: { "Content-Type": "text/xml; charset=utf-8", SOAPAction: "" },
     body: soapBody,
   });
-  const xml = await response.text();
+  const xml = desescaparEntidadesXml(await response.text());
   const token = extraerTag(xml, "token");
   const sign = extraerTag(xml, "sign");
   const expirationTime = extraerTag(xml, "expirationTime");
@@ -160,6 +172,20 @@ export async function solicitarCAE(
 ): Promise<ResultadoArca> {
   const fecha = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const importe = solicitud.importeTotal.toFixed(2);
+  // Factura C (11, monotributo) no discrimina IVA: WSFEv1 rechaza el
+  // comprobante si se informa el bloque Iva. Factura A/B sí lo exige
+  // cuando ImpNeto > 0 (confirmado contra homologación el 2026-08-29).
+  const ivaXml =
+    solicitud.tipoComprobante === 11
+      ? ""
+      : `
+            <ar:Iva>
+              <ar:AlicIva>
+                <ar:Id>3</ar:Id>
+                <ar:BaseImp>${importe}</ar:BaseImp>
+                <ar:Importe>0.00</ar:Importe>
+              </ar:AlicIva>
+            </ar:Iva>`;
 
   const soapBody = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ar="http://ar.gov.afip.dif.FEV1/">
@@ -196,14 +222,7 @@ export async function solicitarCAE(
             <ar:FchVtoPago>${fecha}</ar:FchVtoPago>
             <ar:MonId>PES</ar:MonId>
             <ar:MonCotiz>1</ar:MonCotiz>
-            <ar:CondicionIVAReceptorId>5</ar:CondicionIVAReceptorId>
-            <ar:Iva>
-              <ar:AlicIva>
-                <ar:Id>3</ar:Id>
-                <ar:BaseImp>${importe}</ar:BaseImp>
-                <ar:Importe>0.00</ar:Importe>
-              </ar:AlicIva>
-            </ar:Iva>
+            <ar:CondicionIVAReceptorId>5</ar:CondicionIVAReceptorId>${ivaXml}
           </ar:FECAEDetRequest>
         </ar:FeDetReq>
       </ar:FeCAEReq>
