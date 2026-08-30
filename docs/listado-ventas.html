@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=18" />
+    <link rel="stylesheet" href="./css/styles.css?v=19" />
   </head>
   <body>
     <header class="app-header">
@@ -41,12 +41,12 @@
 
       <div class="card">
         <div class="card-header">
-          <span class="icon-circle icon-circle--lg" id="icon-document-lg"></span>
-          <div class="card-header-text">
-            <h1>Ventas</h1>
-            <p>Consultá y filtrá tus ventas registradas</p>
-          </div>
-          <div class="card-header-actions">
+          <div class="card-header-main">
+            <span class="icon-circle icon-circle--lg" id="icon-document-lg"></span>
+            <div class="card-header-text">
+              <h1>Ventas</h1>
+              <p>Consultá y filtrá tus ventas registradas</p>
+            </div>
             <button
               type="button"
               class="filters-toggle"
@@ -57,36 +57,37 @@
             >
               <span id="icon-filter-toggle"></span>
             </button>
-            <form id="filtros-form" class="filters" novalidate>
-              <div class="filter-field">
-                <label for="filtroDesde" class="filter-label">Desde</label>
-                <input id="filtroDesde" name="desde" type="date" title="Desde" />
-              </div>
-              <div class="filter-field">
-                <label for="filtroHasta" class="filter-label">Hasta</label>
-                <input id="filtroHasta" name="hasta" type="date" title="Hasta" />
-              </div>
-              <div class="field-icon-wrap">
-                <span id="icon-card-2"></span>
-                <label for="filtroModoPago" class="sr-only">Modo de pago</label>
-                <select id="filtroModoPago" name="modoPago" title="Modo de pago">
-                  <option value="">Modo de pago</option>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="tarjeta">Tarjeta</option>
-                </select>
-              </div>
-              <div class="field-icon-wrap">
-                <span id="icon-tag"></span>
-                <label for="filtroEstado" class="sr-only">Estado</label>
-                <select id="filtroEstado" name="estado" title="Estado">
-                  <option value="">Estado</option>
-                  <option value="no-facturada">No facturada</option>
-                  <option value="facturada">Facturada</option>
-                </select>
-              </div>
-              <button type="submit" class="primary"><span id="icon-filter"></span> Filtros</button>
-            </form>
           </div>
+          <form id="filtros-form" class="filters" novalidate>
+            <div class="filter-field">
+              <label for="filtroDesde" class="filter-label">Desde</label>
+              <input id="filtroDesde" name="desde" type="date" title="Desde" placeholder="Desde" />
+            </div>
+            <div class="filter-field">
+              <label for="filtroHasta" class="filter-label">Hasta</label>
+              <input id="filtroHasta" name="hasta" type="date" title="Hasta" placeholder="Hasta" />
+            </div>
+            <div class="field-icon-wrap">
+              <span id="icon-card-2"></span>
+              <label for="filtroModoPago" class="sr-only">Modo de pago</label>
+              <select id="filtroModoPago" name="modoPago" title="Modo de pago">
+                <option value="">Modo de pago</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
+            </div>
+            <div class="field-icon-wrap">
+              <span id="icon-tag"></span>
+              <label for="filtroEstado" class="sr-only">Estado</label>
+              <select id="filtroEstado" name="estado" title="Estado">
+                <option value="">Estado</option>
+                <option value="no-facturada">No facturada</option>
+                <option value="facturada">Facturada</option>
+              </select>
+            </div>
+            <button type="button" id="limpiar-filtros-btn">Borrar filtros</button>
+            <button type="submit" class="primary"><span id="icon-filter"></span> Filtros</button>
+          </form>
         </div>
 
         <div class="selection-bar" id="selection-bar" hidden>
@@ -343,6 +344,13 @@
 
       filtrosForm.addEventListener("submit", async (event) => {
         event.preventDefault();
+        await cargarVentas();
+        filtrosForm.classList.remove("is-open");
+        filtrosToggle.setAttribute("aria-expanded", "false");
+      });
+
+      document.getElementById("limpiar-filtros-btn").addEventListener("click", async () => {
+        filtrosForm.reset();
         await cargarVentas();
         filtrosForm.classList.remove("is-open");
         filtrosToggle.setAttribute("aria-expanded", "false");

@@ -401,6 +401,7 @@ main.container {
 
 .card-header .card-header-text {
   flex: 1 1 auto;
+  min-width: 0;
 }
 
 .card-header p {
@@ -409,12 +410,16 @@ main.container {
   color: var(--color-muted);
 }
 
-.card-header-actions {
+/* Agrupa ícono + título + botón de filtros (mobile) en su propia fila,
+   independiente del formulario de filtros que puede pasar a ocupar una
+   fila entera propia debajo — así el ícono no "cae" a un renglón nuevo
+   junto con los filtros. */
+.card-header-main {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-left: auto;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .card-body-row {
@@ -923,6 +928,7 @@ input[type="radio"] {
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+  margin-left: auto;
 }
 
 .filters .field {
@@ -954,6 +960,7 @@ input[type="radio"] {
    donde los filtros siempre están a la vista en el header de la card). */
 .filters-toggle {
   display: none;
+  flex-shrink: 0;
 }
 
 /* Estado con punto (listado de ventas) ------------------------------- */
@@ -1112,10 +1119,8 @@ input[type="radio"] {
     display: none;
   }
 
-  .card-header-actions {
-    margin-left: 0;
+  .card-header-main {
     width: 100%;
-    align-items: flex-start;
   }
 
   /* En mobile los filtros quedan ocultos por defecto detrás de un botón
@@ -1151,6 +1156,7 @@ input[type="radio"] {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
+    margin-left: 0;
     margin-top: 10px;
   }
 
@@ -1164,7 +1170,7 @@ input[type="radio"] {
     font-size: 16px;
   }
 
-  .filters button[type="submit"] {
+  .filters button {
     width: 100%;
     justify-content: center;
   }
