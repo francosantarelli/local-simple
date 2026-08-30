@@ -923,4 +923,77 @@ input[type="radio"] {
     margin-left: 0;
     width: 100%;
   }
+
+  /* Listados (ventas, facturas, detalle): en vez de una tabla angosta con
+     scroll horizontal, cada fila se convierte en una tarjeta con
+     "etiqueta: valor" apilados. Mismo HTML de siempre — las celdas llevan
+     un atributo data-label desde JS que se usa acá como contenido. */
+  .table-scroll {
+    overflow-x: visible;
+  }
+
+  table.table-cards {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  table.table-cards thead {
+    display: none;
+  }
+
+  table.table-cards tbody tr {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    padding: 6px 12px;
+  }
+
+  table.table-cards tbody tr:hover td {
+    background: transparent;
+  }
+
+  table.table-cards tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-bg);
+    white-space: normal;
+    text-align: right;
+  }
+
+  table.table-cards tbody tr td:last-child {
+    border-bottom: none;
+  }
+
+  table.table-cards tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-muted);
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  /* Celdas sin texto simple (checkbox, botones de acción): sin etiqueta,
+     alineadas normal en vez del layout etiqueta/valor. */
+  table.table-cards tbody td.td-plain {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  table.table-cards tbody td.td-plain::before {
+    content: none;
+  }
+
+  table.table-cards tbody td.td-plain:empty {
+    display: none;
+  }
 }

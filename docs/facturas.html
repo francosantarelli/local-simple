@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=9" />
+    <link rel="stylesheet" href="./css/styles.css?v=10" />
   </head>
   <body>
     <header class="app-header">
@@ -43,7 +43,7 @@
           </div>
         </div>
         <div class="table-scroll">
-          <table>
+          <table class="table-cards">
             <thead>
               <tr>
                 <th>Período</th>
@@ -70,7 +70,7 @@
           </div>
         </div>
         <div class="table-scroll">
-          <table>
+          <table class="table-cards">
             <thead>
               <tr>
                 <th>Fecha</th>
@@ -146,15 +146,15 @@
             factura.estado === "emitida" ? factura.cae : factura.estado === "rechazada" ? factura.motivo_rechazo ?? "" : "";
 
           tr.innerHTML = `
-            <td>${factura.periodo_desde} — ${factura.periodo_hasta}</td>
-            <td>${factura.origen === "manual" ? "Manual" : "Automática"}</td>
-            <td><span class="table-icon-cell">${factura.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
+            <td data-label="Período">${factura.periodo_desde} — ${factura.periodo_hasta}</td>
+            <td data-label="Origen">${factura.origen === "manual" ? "Manual" : "Automática"}</td>
+            <td data-label="Modo de pago"><span class="table-icon-cell">${factura.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
               factura.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
             }</span></td>
-            <td>$${factura.monto_total}</td>
-            <td><span class="badge ${factura.estado}">${factura.estado}</span></td>
-            <td>${caeOMotivo}</td>
-            <td>
+            <td data-label="Monto total">$${factura.monto_total}</td>
+            <td data-label="Estado"><span class="badge ${factura.estado}">${factura.estado}</span></td>
+            <td data-label="CAE / motivo">${caeOMotivo}</td>
+            <td class="td-plain">
               <button type="button" data-action="detalle" data-id="${factura.id}">Ver detalle</button>
               ${
                 puedeConfirmar
@@ -195,11 +195,11 @@
               .map(
                 (v) => `
                   <tr>
-                    <td>${v.fecha}</td>
-                    <td>${v.descripcion}</td>
-                    <td>${v.cantidad}</td>
-                    <td>$${v.precio_unitario}</td>
-                    <td>$${v.precio_total}</td>
+                    <td data-label="Fecha">${v.fecha}</td>
+                    <td data-label="Descripción">${v.descripcion}</td>
+                    <td data-label="Cantidad">${v.cantidad}</td>
+                    <td data-label="Precio unitario">$${v.precio_unitario}</td>
+                    <td data-label="Precio total">$${v.precio_total}</td>
                   </tr>
                 `
               )

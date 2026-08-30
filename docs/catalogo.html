@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=9" />
+    <link rel="stylesheet" href="./css/styles.css?v=10" />
   </head>
   <body>
     <header class="app-header">
@@ -100,7 +100,7 @@
 
       <div class="card">
         <div class="table-scroll">
-          <table>
+          <table class="table-cards">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -285,10 +285,10 @@
             .map(
               (producto) => `
                 <tr>
-                  <td>${producto.nombre}</td>
-                  <td>${producto.categorias?.descripcion ?? "—"}</td>
-                  <td>$${producto.precio_unitario}</td>
-                  <td>
+                  <td data-label="Nombre">${producto.nombre}</td>
+                  <td data-label="Categoría">${producto.categorias?.descripcion ?? "—"}</td>
+                  <td data-label="Precio unitario">$${producto.precio_unitario}</td>
+                  <td class="td-plain">
                     <div class="row-actions">
                       <button type="button" data-action="editar" data-id="${producto.id}" aria-label="Editar">${icons.edit}</button>
                       <button type="button" class="danger" data-action="eliminar" data-id="${producto.id}" aria-label="Eliminar">${icons.trash}</button>

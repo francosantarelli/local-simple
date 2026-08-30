@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=9" />
+    <link rel="stylesheet" href="./css/styles.css?v=10" />
   </head>
   <body>
     <header class="app-header">
@@ -205,7 +205,7 @@
         </div>
 
         <div class="table-scroll">
-          <table>
+          <table class="table-cards">
             <thead>
               <tr>
                 <th style="width: 1%">
@@ -476,20 +476,20 @@
           const seleccionable = !venta.factura_id;
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${
+            <td class="td-plain">${
               seleccionable
                 ? `<input type="checkbox" class="venta-checkbox" data-id="${venta.id}" aria-label="Seleccionar venta" />`
                 : ""
             }</td>
-            <td>${venta.fecha}</td>
-            <td>${venta.descripcion}</td>
-            <td>${venta.cantidad}</td>
-            <td>$${venta.precio_unitario}</td>
-            <td>$${venta.precio_total}</td>
-            <td><span class="table-icon-cell">${venta.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
+            <td data-label="Fecha">${venta.fecha}</td>
+            <td data-label="Descripción">${venta.descripcion}</td>
+            <td data-label="Cantidad">${venta.cantidad}</td>
+            <td data-label="Precio unitario">$${venta.precio_unitario}</td>
+            <td data-label="Precio total">$${venta.precio_total}</td>
+            <td data-label="Modo de pago"><span class="table-icon-cell">${venta.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
               venta.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
             }</span></td>
-            <td><span class="status ${facturada ? "facturada" : "no-facturada"}">${icons.dot} ${
+            <td data-label="Estado"><span class="status ${facturada ? "facturada" : "no-facturada"}">${icons.dot} ${
               facturada ? "Facturada" : "No facturada"
             }</span></td>
           `;
