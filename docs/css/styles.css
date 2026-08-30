@@ -899,6 +899,19 @@ input[type="radio"] {
   min-width: 130px;
 }
 
+.filters .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filters .filter-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  padding-left: 4px;
+}
+
 /* Estado con punto (listado de ventas) ------------------------------- */
 
 .status {
