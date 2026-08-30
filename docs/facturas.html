@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=16" />
+    <link rel="stylesheet" href="./css/styles.css?v=17" />
   </head>
   <body>
     <header class="app-header">
@@ -16,19 +16,23 @@
         <span id="brand-name">local-simple</span>
       </a>
       <nav>
-        <a href="./ventas.html"><span id="icon-cart"></span> Ventas</a>
-        <a href="./facturas.html" aria-current="page"><span id="icon-document"></span> Facturas</a>
-        <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
         <a href="./resumen.html"><span id="icon-nav-resumen"></span> Resumen</a>
+        <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
+        <a href="./ventas.html"><span id="icon-cart"></span> Venta</a>
+        <a href="./listado-ventas.html"><span id="icon-list"></span> Ventas</a>
+        <a href="./facturas.html" aria-current="page"><span id="icon-document"></span> Facturas</a>
       </nav>
       <div class="header-right">
-        <div class="user-chip">
-          <span class="avatar" id="user-avatar"></span>
-          <span id="user-name"></span>
+        <div class="user-menu">
+          <button type="button" class="user-chip" id="user-menu-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="avatar" id="user-avatar"></span>
+            <span id="user-name"></span>
+            <span id="icon-chevron"></span>
+          </button>
+          <div class="user-menu-dropdown" id="user-menu-dropdown" hidden>
+            <button type="button" id="logout-link"><span id="icon-logout"></span> Cerrar sesión</button>
+          </div>
         </div>
-        <button type="button" class="icon-button" id="logout-link" aria-label="Cerrar sesión" title="Cerrar sesión">
-          <span id="icon-logout"></span>
-        </button>
       </div>
     </header>
 
@@ -93,11 +97,11 @@
       <div class="mobile-tabbar-fab-wrap">
         <a href="./ventas.html" class="mobile-tabbar-fab">
           <span class="mobile-tabbar-fab-icon" id="icon-tab-ventas"></span>
-          Ventas
+          Venta
         </a>
       </div>
+      <a href="./listado-ventas.html" class="mobile-tabbar-item"><span id="icon-tab-listado"></span>Ventas</a>
       <a href="./facturas.html" class="mobile-tabbar-item" aria-current="page"><span id="icon-tab-facturas"></span>Facturas</a>
-      <a href="#" class="mobile-tabbar-item" id="mobile-logout-link"><span id="icon-tab-logout"></span>Salir</a>
     </nav>
 
     <script type="module">
@@ -106,21 +110,24 @@
       import { createFacturasService } from "./js/facturas.js";
       import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
       import { icons } from "./js/icons.js";
+      import { formatFecha } from "./js/format.js";
 
       for (const [id, name] of [
         ["icon-store", "store"],
         ["icon-cart", "cart"],
+        ["icon-list", "list"],
         ["icon-document", "document"],
         ["icon-box", "box"],
         ["icon-logout", "logout"],
+        ["icon-chevron", "chevronDown"],
         ["icon-document-lg", "document"],
         ["icon-tag-lg", "tag"],
         ["icon-nav-resumen", "trendingUp"],
         ["icon-tab-resumen", "trendingUp"],
         ["icon-tab-catalogo", "box"],
         ["icon-tab-ventas", "cart"],
+        ["icon-tab-listado", "list"],
         ["icon-tab-facturas", "document"],
-        ["icon-tab-logout", "logout"],
       ]) {
         const el = document.getElementById(id);
         if (el) el.innerHTML = icons[name];
@@ -138,7 +145,19 @@
         window.location.href = "./index.html";
       }
       document.getElementById("logout-link").addEventListener("click", cerrarSesion);
-      document.getElementById("mobile-logout-link").addEventListener("click", cerrarSesion);
+
+      const userMenuToggle = document.getElementById("user-menu-toggle");
+      const userMenuDropdown = document.getElementById("user-menu-dropdown");
+      userMenuToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const abierto = !userMenuDropdown.hidden;
+        userMenuDropdown.hidden = abierto;
+        userMenuToggle.setAttribute("aria-expanded", String(!abierto));
+      });
+      document.addEventListener("click", () => {
+        userMenuDropdown.hidden = true;
+        userMenuToggle.setAttribute("aria-expanded", "false");
+      });
 
       const { data: profile } = await sb
         .from("profiles")
@@ -170,7 +189,7 @@
             factura.estado === "emitida" ? factura.cae : factura.estado === "rechazada" ? factura.motivo_rechazo ?? "" : "";
 
           tr.innerHTML = `
-            <td data-label="Período">${factura.periodo_desde} — ${factura.periodo_hasta}</td>
+            <td data-label="Período">${formatFecha(factura.periodo_desde)} — ${formatFecha(factura.periodo_hasta)}</td>
             <td data-label="Origen">${factura.origen === "manual" ? "Manual" : "Automática"}</td>
             <td data-label="Modo de pago"><span class="table-icon-cell">${factura.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
               factura.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
@@ -219,7 +238,7 @@
               .map(
                 (v) => `
                   <tr>
-                    <td data-label="Fecha">${v.fecha}</td>
+                    <td data-label="Fecha">${formatFecha(v.fecha)}</td>
                     <td data-label="Descripción">${v.descripcion}</td>
                     <td data-label="Cantidad">${v.cantidad}</td>
                     <td data-label="Precio unitario">$${v.precio_unitario}</td>

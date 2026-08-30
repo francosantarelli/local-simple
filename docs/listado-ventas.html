@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ventas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/styles.css?v=17" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="./ventas.html" class="brand">
+        <span class="brand-icon" id="icon-store"></span>
+        <span id="brand-name">local-simple</span>
+      </a>
+      <nav>
+        <a href="./resumen.html"><span id="icon-nav-resumen"></span> Resumen</a>
+        <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
+        <a href="./ventas.html"><span id="icon-cart"></span> Venta</a>
+        <a href="./listado-ventas.html" aria-current="page"><span id="icon-list"></span> Ventas</a>
+        <a href="./facturas.html"><span id="icon-document"></span> Facturas</a>
+      </nav>
+      <div class="header-right">
+        <div class="user-menu">
+          <button type="button" class="user-chip" id="user-menu-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="avatar" id="user-avatar"></span>
+            <span id="user-name"></span>
+            <span id="icon-chevron"></span>
+          </button>
+          <div class="user-menu-dropdown" id="user-menu-dropdown" hidden>
+            <button type="button" id="logout-link"><span id="icon-logout"></span> Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <p id="page-error" class="error-message" role="alert" hidden></p>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="icon-circle icon-circle--lg" id="icon-document-lg"></span>
+          <div class="card-header-text">
+            <h1>Ventas</h1>
+            <p>Consultá y filtrá tus ventas registradas</p>
+          </div>
+          <div class="card-header-actions">
+            <form id="filtros-form" class="filters" novalidate>
+              <div class="filter-field">
+                <label for="filtroDesde" class="filter-label">Desde</label>
+                <input id="filtroDesde" name="desde" type="date" title="Desde" />
+              </div>
+              <div class="filter-field">
+                <label for="filtroHasta" class="filter-label">Hasta</label>
+                <input id="filtroHasta" name="hasta" type="date" title="Hasta" />
+              </div>
+              <div class="field-icon-wrap">
+                <span id="icon-card-2"></span>
+                <label for="filtroModoPago" class="sr-only">Modo de pago</label>
+                <select id="filtroModoPago" name="modoPago" title="Modo de pago">
+                  <option value="">Modo de pago</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                </select>
+              </div>
+              <div class="field-icon-wrap">
+                <span id="icon-tag"></span>
+                <label for="filtroEstado" class="sr-only">Estado</label>
+                <select id="filtroEstado" name="estado" title="Estado">
+                  <option value="">Estado</option>
+                  <option value="no-facturada">No facturada</option>
+                  <option value="facturada">Facturada</option>
+                </select>
+              </div>
+              <button type="submit" class="primary"><span id="icon-filter"></span> Filtros</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="selection-bar" id="selection-bar" hidden>
+          <span id="selection-count"></span>
+          <button type="button" class="primary" id="generar-borrador-btn">
+            <span id="icon-check-2"></span> Generar borrador
+          </button>
+        </div>
+
+        <p id="listado-feedback" hidden></p>
+
+        <div class="table-scroll">
+          <table class="table-cards">
+            <thead>
+              <tr>
+                <th style="width: 1%">
+                  <input type="checkbox" id="select-all-checkbox" aria-label="Seleccionar todas las ventas no facturadas" />
+                </th>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Precio total</th>
+                <th>Modo de pago</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="ventas-tbody"></tbody>
+          </table>
+        </div>
+        <p class="table-footer-note" id="ventas-footer"></p>
+      </div>
+    </main>
+
+    <nav class="mobile-tabbar" aria-label="Navegación mobile">
+      <a href="./resumen.html" class="mobile-tabbar-item"><span id="icon-tab-resumen"></span>Resumen</a>
+      <a href="./catalogo.html" class="mobile-tabbar-item"><span id="icon-tab-catalogo"></span>Catálogo</a>
+      <div class="mobile-tabbar-fab-wrap">
+        <a href="./ventas.html" class="mobile-tabbar-fab">
+          <span class="mobile-tabbar-fab-icon" id="icon-tab-ventas"></span>
+          Venta
+        </a>
+      </div>
+      <a href="./listado-ventas.html" class="mobile-tabbar-item" aria-current="page"><span id="icon-tab-listado"></span>Ventas</a>
+      <a href="./facturas.html" class="mobile-tabbar-item"><span id="icon-tab-facturas"></span>Facturas</a>
+    </nav>
+
+    <script type="module">
+      import { sb } from "./js/supabaseClient.js";
+      import { createAuthService } from "./js/auth.js";
+      import { createVentasService } from "./js/ventas.js";
+      import { icons } from "./js/icons.js";
+      import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
+      import { formatFecha } from "./js/format.js";
+
+      for (const [id, name] of [
+        ["icon-store", "store"],
+        ["icon-cart", "cart"],
+        ["icon-list", "list"],
+        ["icon-document", "document"],
+        ["icon-box", "box"],
+        ["icon-logout", "logout"],
+        ["icon-chevron", "chevronDown"],
+        ["icon-nav-resumen", "trendingUp"],
+        ["icon-document-lg", "document"],
+        ["icon-card-2", "card"],
+        ["icon-tag", "tag"],
+        ["icon-filter", "filter"],
+        ["icon-check-2", "check"],
+        ["icon-tab-resumen", "trendingUp"],
+        ["icon-tab-catalogo", "box"],
+        ["icon-tab-ventas", "cart"],
+        ["icon-tab-listado", "list"],
+        ["icon-tab-facturas", "document"],
+      ]) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = icons[name];
+      }
+
+      const auth = createAuthService(sb);
+      const ventasService = createVentasService(sb, {
+        functionsUrl: `${LOCAL_SIMPLE_CONFIG.supabaseUrl}/functions/v1`,
+        anonKey: LOCAL_SIMPLE_CONFIG.supabaseAnonKey,
+      });
+
+      const session = await auth.requireSession();
+      if (!session) {
+        window.location.href = "./index.html";
+      }
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("local_id, username, locales ( nombre_fantasia )")
+        .eq("id", session.user.id)
+        .single();
+      const localId = profile.local_id;
+
+      document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
+      document.getElementById("user-name").textContent = profile.username;
+      document.getElementById("brand-name").textContent = profile.locales?.nombre_fantasia ?? "local-simple";
+
+      async function cerrarSesion(event) {
+        event.preventDefault();
+        await auth.logout();
+        window.location.href = "./index.html";
+      }
+      document.getElementById("logout-link").addEventListener("click", cerrarSesion);
+
+      const userMenuToggle = document.getElementById("user-menu-toggle");
+      const userMenuDropdown = document.getElementById("user-menu-dropdown");
+      userMenuToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const abierto = !userMenuDropdown.hidden;
+        userMenuDropdown.hidden = abierto;
+        userMenuToggle.setAttribute("aria-expanded", String(!abierto));
+      });
+      document.addEventListener("click", () => {
+        userMenuDropdown.hidden = true;
+        userMenuToggle.setAttribute("aria-expanded", "false");
+      });
+
+      const pageErrorEl = document.getElementById("page-error");
+      const listadoFeedbackEl = document.getElementById("listado-feedback");
+
+      const tbody = document.getElementById("ventas-tbody");
+      const ventasFooterEl = document.getElementById("ventas-footer");
+      const selectionBar = document.getElementById("selection-bar");
+      const selectionCountEl = document.getElementById("selection-count");
+      const selectAllCheckbox = document.getElementById("select-all-checkbox");
+      const generarBorradorBtn = document.getElementById("generar-borrador-btn");
+
+      // Solo se puede elegir una venta para un borrador manual si todavía
+      // no está reclamada por NINGUNA factura (ni borrador ni emitida) —
+      // es una condición más estricta que "no facturada" (que sí incluye
+      // ventas ya en un borrador pendiente). Ver contracts/generar-borrador-factura.md.
+      const seleccionadas = new Set();
+
+      function actualizarBarraSeleccion() {
+        selectionBar.hidden = seleccionadas.size === 0;
+        selectionCountEl.textContent = `${seleccionadas.size} ${
+          seleccionadas.size === 1 ? "venta seleccionada" : "ventas seleccionadas"
+        }`;
+      }
+
+      function renderVentas(ventas) {
+        tbody.innerHTML = "";
+        seleccionadas.clear();
+        selectAllCheckbox.checked = false;
+        actualizarBarraSeleccion();
+
+        for (const venta of ventas) {
+          const facturada = Boolean(venta.factura_id) && venta.facturas?.estado === "emitida";
+          const seleccionable = !venta.factura_id;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="td-plain">${
+              seleccionable
+                ? `<input type="checkbox" class="venta-checkbox" data-id="${venta.id}" aria-label="Seleccionar venta" />`
+                : ""
+            }</td>
+            <td data-label="Fecha">${formatFecha(venta.fecha)}</td>
+            <td data-label="Descripción">${venta.descripcion}</td>
+            <td data-label="Cantidad">${venta.cantidad}</td>
+            <td data-label="Precio unitario">$${venta.precio_unitario}</td>
+            <td data-label="Precio total">$${venta.precio_total}</td>
+            <td data-label="Modo de pago"><span class="table-icon-cell">${venta.modo_pago === "tarjeta" ? icons.card : icons.cash} ${
+              venta.modo_pago === "tarjeta" ? "Tarjeta" : "Efectivo"
+            }</span></td>
+            <td data-label="Estado"><span class="status ${facturada ? "facturada" : "no-facturada"}">${icons.dot} ${
+              facturada ? "Facturada" : "No facturada"
+            }</span></td>
+          `;
+          tbody.appendChild(tr);
+        }
+        ventasFooterEl.textContent = `Mostrando ${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"}`;
+      }
+
+      tbody.addEventListener("change", (event) => {
+        const checkbox = event.target.closest(".venta-checkbox");
+        if (!checkbox) return;
+        if (checkbox.checked) {
+          seleccionadas.add(checkbox.dataset.id);
+        } else {
+          seleccionadas.delete(checkbox.dataset.id);
+        }
+        actualizarBarraSeleccion();
+      });
+
+      selectAllCheckbox.addEventListener("change", () => {
+        const checkboxes = tbody.querySelectorAll(".venta-checkbox");
+        for (const checkbox of checkboxes) {
+          checkbox.checked = selectAllCheckbox.checked;
+          if (selectAllCheckbox.checked) {
+            seleccionadas.add(checkbox.dataset.id);
+          } else {
+            seleccionadas.delete(checkbox.dataset.id);
+          }
+        }
+        actualizarBarraSeleccion();
+      });
+
+      generarBorradorBtn.addEventListener("click", async () => {
+        const textoOriginal = generarBorradorBtn.innerHTML;
+        generarBorradorBtn.disabled = true;
+        generarBorradorBtn.textContent = "Generando…";
+        try {
+          const resultado = await ventasService.generarBorradorManual([...seleccionadas]);
+          listadoFeedbackEl.hidden = false;
+          if (resultado.facturas_generadas > 0) {
+            listadoFeedbackEl.textContent = `Se generó ${resultado.facturas_generadas} ${
+              resultado.facturas_generadas === 1 ? "factura borrador" : "facturas borrador"
+            } (una por modo de pago). Confirmalas desde Facturas.${
+              resultado.ventas_omitidas?.length
+                ? ` ${resultado.ventas_omitidas.length} venta(s) ya no estaban disponibles y no se incluyeron.`
+                : ""
+            }`;
+          } else {
+            listadoFeedbackEl.textContent = resultado.message || "No se pudo generar el borrador.";
+          }
+          await cargarVentas();
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo generar el borrador por un error de conexión. Volvé a intentar.";
+          pageErrorEl.hidden = false;
+        } finally {
+          generarBorradorBtn.disabled = false;
+          generarBorradorBtn.innerHTML = textoOriginal;
+        }
+      });
+
+      async function cargarVentas() {
+        try {
+          const { data, error } = await ventasService.listarVentas(localId, {
+            desde: filtrosForm.desde.value || undefined,
+            hasta: filtrosForm.hasta.value || undefined,
+            modoPago: filtrosForm.modoPago.value || undefined,
+            estado: filtrosForm.estado.value || undefined,
+          });
+          if (error) throw error;
+          pageErrorEl.hidden = true;
+          renderVentas(data);
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo cargar el listado de ventas. Volvé a intentar en unos segundos.";
+          pageErrorEl.hidden = false;
+        }
+      }
+
+      const filtrosForm = document.getElementById("filtros-form");
+      filtrosForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await cargarVentas();
+      });
+
+      await cargarVentas();
+    </script>
+  </body>
+</html>
