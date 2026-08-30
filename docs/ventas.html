@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=8" />
+    <link rel="stylesheet" href="./css/styles.css?v=9" />
   </head>
   <body>
     <header class="app-header">
@@ -112,13 +112,12 @@
                     <input
                       id="producto"
                       type="text"
-                      list="productos-datalist"
                       autocomplete="off"
                       placeholder="Buscar en el catálogo o escribir una descripción…"
                       required
                     />
+                    <ul class="autocomplete-list" id="producto-suggestions" hidden></ul>
                   </div>
-                  <datalist id="productos-datalist"></datalist>
                   <p class="error-message" data-error-for="descripcion" hidden></p>
                 </div>
               </div>
@@ -290,37 +289,63 @@
         window.location.href = "./index.html";
       });
 
-      // Buscador con autocompletado nativo (datalist) del catálogo de
-      // productos del local (FR-007). Si lo tipeado coincide exactamente
-      // con una etiqueta del catálogo, se toma como producto elegido
-      // (autocompleta precio); si no coincide con nada, se usa tal cual
-      // como descripción libre — no hace falta un toggle aparte.
+      // Buscador con autocompletado propio (no <datalist>: en Safari de
+      // iOS no muestra sugerencias al tipear, es una limitación conocida
+      // de WebKit) del catálogo de productos del local (FR-007). Si se
+      // elige una sugerencia se toma como producto (autocompleta precio);
+      // si se sigue tipeando sin elegir ninguna, se usa tal cual como
+      // descripción libre — no hace falta un toggle aparte.
       const productoInput = document.getElementById("producto");
-      const productosDatalist = document.getElementById("productos-datalist");
+      const sugerenciasEl = document.getElementById("producto-suggestions");
       const precioUnitarioInput = document.getElementById("precioUnitario");
       const { data: productos } = await ventasService.listarProductos(localId);
 
-      const etiquetaPorProducto = (p) => `${p.nombre} — $${p.precio_unitario}`;
-      const productoPorEtiqueta = new Map(productos.map((p) => [etiquetaPorProducto(p), p]));
-      for (const producto of productos) {
-        const option = document.createElement("option");
-        option.value = etiquetaPorProducto(producto);
-        productosDatalist.appendChild(option);
+      let productoSeleccionado = null;
+
+      function renderSugerencias() {
+        const q = productoInput.value.trim().toLowerCase();
+        const coincidencias = q
+          ? productos.filter((p) => p.nombre.toLowerCase().includes(q)).slice(0, 8)
+          : [];
+
+        if (coincidencias.length === 0) {
+          sugerenciasEl.hidden = true;
+          sugerenciasEl.innerHTML = "";
+          return;
+        }
+
+        sugerenciasEl.innerHTML = coincidencias
+          .map((p) => `<li data-id="${p.id}">${p.nombre} — $${p.precio_unitario}</li>`)
+          .join("");
+        sugerenciasEl.hidden = false;
       }
 
-      let productoSeleccionado = null;
       productoInput.addEventListener("input", () => {
-        const match = productoPorEtiqueta.get(productoInput.value);
-        if (match) {
-          productoSeleccionado = match;
-          precioUnitarioInput.value = match.precio_unitario;
-          // Reemplaza la etiqueta completa ("Nombre — $Precio") por el
-          // nombre limpio: eso es lo que se guarda como descripción.
-          productoInput.value = match.nombre;
+        productoSeleccionado = null;
+        renderSugerencias();
+      });
+
+      productoInput.addEventListener("focus", renderSugerencias);
+
+      // blur dispara antes que el click en la sugerencia; se cierra con
+      // mousedown (que sí llega primero) en vez de esperar el blur.
+      sugerenciasEl.addEventListener("mousedown", (event) => {
+        const li = event.target.closest("li[data-id]");
+        if (!li) return;
+        event.preventDefault();
+        const producto = productos.find((p) => p.id === li.dataset.id);
+        if (producto) {
+          productoSeleccionado = producto;
+          productoInput.value = producto.nombre;
+          precioUnitarioInput.value = producto.precio_unitario;
           recalcularTotal();
-        } else {
-          productoSeleccionado = null;
         }
+        sugerenciasEl.hidden = true;
+        sugerenciasEl.innerHTML = "";
+      });
+
+      productoInput.addEventListener("blur", () => {
+        sugerenciasEl.hidden = true;
       });
 
       // Fecha: hoy por defecto (en huso horario local, no UTC), editable.
@@ -412,6 +437,8 @@
         cantidadInput.value = 1;
         totalEditadoManualmente = false;
         productoSeleccionado = null;
+        sugerenciasEl.hidden = true;
+        sugerenciasEl.innerHTML = "";
         feedbackEl.textContent = "Venta guardada.";
         feedbackEl.hidden = false;
         await cargarVentas();

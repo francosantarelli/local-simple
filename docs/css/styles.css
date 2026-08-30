@@ -402,6 +402,35 @@ form .form-row .field {
   padding-left: 40px !important;
 }
 
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.autocomplete-list li {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.autocomplete-list li:hover {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+}
+
 .field-icon-wrap.currency::before {
   content: "$";
   position: absolute;
@@ -869,6 +898,13 @@ input[type="radio"] {
 
   form .form-row {
     flex-direction: column;
+  }
+
+  /* En columna, "flex: 1 1 160px" pasa a leer 160px como altura mínima
+     sugerida (era ancho en fila) — cada campo reservaba ~160px de alto
+     aunque su contenido ocupara la mitad. */
+  form .form-row .field {
+    flex: 1 1 auto;
   }
 
   main.container {
