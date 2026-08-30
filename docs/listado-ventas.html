@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=17" />
+    <link rel="stylesheet" href="./css/styles.css?v=18" />
   </head>
   <body>
     <header class="app-header">
@@ -47,6 +47,16 @@
             <p>Consultá y filtrá tus ventas registradas</p>
           </div>
           <div class="card-header-actions">
+            <button
+              type="button"
+              class="filters-toggle"
+              id="filtros-toggle"
+              aria-expanded="false"
+              aria-controls="filtros-form"
+              aria-label="Mostrar filtros"
+            >
+              <span id="icon-filter-toggle"></span>
+            </button>
             <form id="filtros-form" class="filters" novalidate>
               <div class="filter-field">
                 <label for="filtroDesde" class="filter-label">Desde</label>
@@ -145,6 +155,7 @@
         ["icon-card-2", "card"],
         ["icon-tag", "tag"],
         ["icon-filter", "filter"],
+        ["icon-filter-toggle", "filter"],
         ["icon-check-2", "check"],
         ["icon-tab-resumen", "trendingUp"],
         ["icon-tab-catalogo", "box"],
@@ -324,9 +335,17 @@
       }
 
       const filtrosForm = document.getElementById("filtros-form");
+      const filtrosToggle = document.getElementById("filtros-toggle");
+      filtrosToggle.addEventListener("click", () => {
+        const abierto = filtrosForm.classList.toggle("is-open");
+        filtrosToggle.setAttribute("aria-expanded", String(abierto));
+      });
+
       filtrosForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         await cargarVentas();
+        filtrosForm.classList.remove("is-open");
+        filtrosToggle.setAttribute("aria-expanded", "false");
       });
 
       await cargarVentas();

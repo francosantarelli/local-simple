@@ -950,6 +950,12 @@ input[type="radio"] {
   padding-left: 4px;
 }
 
+/* Botón para mostrar/ocultar los filtros en mobile (oculto en desktop,
+   donde los filtros siempre están a la vista en el header de la card). */
+.filters-toggle {
+  display: none;
+}
+
 /* Estado con punto (listado de ventas) ------------------------------- */
 
 .status {
@@ -1068,10 +1074,6 @@ input[type="radio"] {
     display: none;
   }
 
-  main.container {
-    padding-bottom: 96px;
-  }
-
   .mobile-tabbar {
     display: flex;
     position: fixed;
@@ -1099,7 +1101,7 @@ input[type="radio"] {
   }
 
   main.container {
-    padding: 14px;
+    padding: 14px 14px 96px;
   }
 
   .card {
@@ -1113,6 +1115,58 @@ input[type="radio"] {
   .card-header-actions {
     margin-left: 0;
     width: 100%;
+    align-items: flex-start;
+  }
+
+  /* En mobile los filtros quedan ocultos por defecto detrás de un botón
+     con ícono; al abrirse, cada campo pasa a ocupar una fila entera
+     (Desde y Hasta uno debajo del otro) en vez de amontonarse. */
+  .filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-muted);
+  }
+
+  .filters-toggle svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .filters-toggle[aria-expanded="true"] {
+    background: var(--color-primary-tint);
+    color: var(--color-primary-dark);
+    border-color: var(--color-primary-tint);
+  }
+
+  .filters {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .filters.is-open {
+    display: flex;
+  }
+
+  .filters select,
+  .filters input {
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  .filters button[type="submit"] {
+    width: 100%;
+    justify-content: center;
   }
 
   /* Listados (ventas, facturas, detalle): en vez de una tabla angosta con
