@@ -470,6 +470,21 @@ form input[type="date"] {
   min-width: 0;
 }
 
+/* Fecha necesita más lugar para no cortarse en una línea; Cantidad (el
+   stepper) no lo necesita. Selector por id, no por clase: así gana
+   siempre frente al reset a columna del media query mobile, sin
+   depender de en qué orden queden las reglas en la hoja de estilos
+   (ver el bug de "flex: ... inline" resuelto antes). */
+#fecha-cantidad-row .field:first-child {
+  flex: 3 1 0;
+  min-width: 0;
+}
+
+#fecha-cantidad-row .field:last-child {
+  flex: 2 1 0;
+  min-width: 0;
+}
+
 form .form-row {
   display: flex;
   gap: 16px;
