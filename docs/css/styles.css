@@ -342,6 +342,7 @@ form .field {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 14px;
+  min-width: 0;
 }
 
 form label {
@@ -353,6 +354,8 @@ form label {
 form input,
 form select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   font-family: inherit;
   font-size: 0.95rem;
   padding: 10px 12px;

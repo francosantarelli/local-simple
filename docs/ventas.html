@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=10" />
+    <link rel="stylesheet" href="./css/styles.css?v=11" />
   </head>
   <body>
     <header class="app-header">
@@ -76,7 +76,7 @@
               <div class="form-row">
                 <div class="field">
                   <label for="fecha">Fecha</label>
-                  <div class="field-icon-wrap"><span id="icon-calendar"></span><input id="fecha" name="fecha" type="date" required /></div>
+                  <input id="fecha" name="fecha" type="date" required />
                   <p class="error-message" data-error-for="fecha" hidden></p>
                 </div>
                 <div class="field">
@@ -164,13 +164,11 @@
           </div>
           <div class="card-header-actions">
             <form id="filtros-form" class="filters" novalidate>
-              <div class="field-icon-wrap">
-                <span id="icon-calendar-2"></span>
+              <div>
                 <label for="filtroDesde" class="sr-only">Desde</label>
                 <input id="filtroDesde" name="desde" type="date" title="Desde" />
               </div>
-              <div class="field-icon-wrap">
-                <span id="icon-calendar-3"></span>
+              <div>
                 <label for="filtroHasta" class="sr-only">Hasta</label>
                 <input id="filtroHasta" name="hasta" type="date" title="Hasta" />
               </div>
@@ -244,7 +242,6 @@
         ["icon-calendar-stat", "calendar"],
         ["icon-clock", "clock"],
         ["icon-cart-lg", "cart"],
-        ["icon-calendar", "calendar"],
         ["icon-minus", "minus"],
         ["icon-plus", "plus"],
         ["icon-cash-radio", "cash"],
@@ -252,8 +249,6 @@
         ["icon-search", "search"],
         ["icon-check", "check"],
         ["icon-document-lg", "document"],
-        ["icon-calendar-2", "calendar"],
-        ["icon-calendar-3", "calendar"],
         ["icon-card-2", "card"],
         ["icon-tag", "tag"],
         ["icon-filter", "filter"],
