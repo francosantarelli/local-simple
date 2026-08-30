@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=12" />
+    <link rel="stylesheet" href="./css/styles.css?v=13" />
   </head>
   <body>
     <header class="app-header">
@@ -48,19 +48,21 @@
           <div class="card-body-main">
             <form id="venta-form" novalidate>
               <div class="form-row">
-                <div class="field">
-                  <label for="fecha">Fecha</label>
-                  <input id="fecha" name="fecha" type="date" required />
-                  <p class="error-message" data-error-for="fecha" hidden></p>
-                </div>
-                <div class="field">
-                  <label for="cantidad">Cantidad</label>
-                  <div class="stepper">
-                    <button type="button" id="cantidad-minus" aria-label="Restar uno"><span id="icon-minus"></span></button>
-                    <input id="cantidad" name="cantidad" type="number" min="0" step="any" value="1" required />
-                    <button type="button" id="cantidad-plus" aria-label="Sumar uno"><span id="icon-plus"></span></button>
+                <div class="form-row-nowrap">
+                  <div class="field">
+                    <label for="fecha">Fecha</label>
+                    <input id="fecha" name="fecha" type="date" required />
+                    <p class="error-message" data-error-for="fecha" hidden></p>
                   </div>
-                  <p class="error-message" data-error-for="cantidad" hidden></p>
+                  <div class="field">
+                    <label for="cantidad">Cantidad</label>
+                    <div class="stepper">
+                      <button type="button" id="cantidad-minus" aria-label="Restar uno"><span id="icon-minus"></span></button>
+                      <input id="cantidad" name="cantidad" type="number" min="0" step="any" value="1" required />
+                      <button type="button" id="cantidad-plus" aria-label="Sumar uno"><span id="icon-plus"></span></button>
+                    </div>
+                    <p class="error-message" data-error-for="cantidad" hidden></p>
+                  </div>
                 </div>
                 <div class="field">
                   <label>Medio de pago</label>

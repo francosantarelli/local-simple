@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=12" />
+    <link rel="stylesheet" href="./css/styles.css?v=13" />
   </head>
   <body>
     <header class="app-header">
@@ -45,7 +45,7 @@
         </div>
 
         <form id="categoria-form" class="form-row" novalidate>
-          <div class="field" style="flex: 2 1 260px">
+          <div class="field field--wide">
             <label for="categoriaDescripcion" class="sr-only">Nombre de la categoría</label>
             <input id="categoriaDescripcion" type="text" placeholder="Nombre de la categoría" required />
           </div>
@@ -69,7 +69,7 @@
 
         <form id="producto-form" novalidate>
           <div class="form-row">
-            <div class="field" style="flex: 2 1 220px">
+            <div class="field field--wide">
               <label for="productoNombre">Nombre</label>
               <input id="productoNombre" type="text" required />
               <p class="error-message" data-error-for="nombre" hidden></p>

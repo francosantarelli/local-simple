@@ -431,7 +431,10 @@ form select {
   max-width: 100%;
   min-width: 0;
   font-family: inherit;
-  font-size: 0.95rem;
+  /* 16px, no 0.95rem (~15.2px): por debajo de 16px, Safari de iOS hace
+     zoom automático de toda la página al enfocar el input — se ve como
+     si el layout se rompiera, pero es zoom, no un bug de tamaño. */
+  font-size: 16px;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -447,6 +450,26 @@ form select:focus {
   box-shadow: 0 0 0 3px var(--color-primary-tint);
 }
 
+/* Safari de iOS dibuja su propio "look" nativo sobre el input de fecha
+   por encima de nuestro border/padding/background, dando un aspecto de
+   caja doble. Sacamos ese estilo nativo para que se vea como el resto
+   de los inputs. */
+form input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Subfila que NUNCA se apila en mobile (a diferencia de .form-row), para
+   agrupar campos cortos que rara vez se editan (ej. Fecha + Cantidad) y
+   no ocupen media pantalla cada uno estando siempre en su propia fila. */
+.form-row-nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 form .form-row {
   display: flex;
   gap: 16px;
@@ -455,6 +478,14 @@ form .form-row {
 
 form .form-row .field {
   flex: 1 1 160px;
+}
+
+/* Campo más ancho dentro de un form-row (ej. nombre/descripción). Clase
+   en vez de "style=flex:..." inline: un inline SIEMPRE le gana a
+   cualquier regla del stylesheet (aunque sea más específica), así que
+   el reset a columna en mobile no podía pisarlo. */
+form .form-row .field--wide {
+  flex: 2 1 220px;
 }
 
 /* Input con ícono a la izquierda (fecha, medio de pago, producto, $) --- */
