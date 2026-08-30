@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=11" />
+    <link rel="stylesheet" href="./css/styles.css?v=12" />
   </head>
   <body>
     <header class="app-header">
@@ -19,6 +19,7 @@
         <a href="./ventas.html" aria-current="page"><span id="icon-cart"></span> Ventas</a>
         <a href="./facturas.html"><span id="icon-document"></span> Facturas</a>
         <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
+        <a href="./resumen.html"><span id="icon-nav-resumen"></span> Resumen</a>
       </nav>
       <div class="header-right">
         <div class="user-chip">
@@ -33,33 +34,6 @@
 
     <main class="container">
       <p id="page-error" class="error-message" role="alert" hidden></p>
-
-      <div class="stat-grid">
-        <div class="stat-card">
-          <span class="icon-circle icon-circle--sm" id="icon-trending"></span>
-          <div>
-            <p class="stat-label">Ventas hoy</p>
-            <p class="stat-value" id="stat-hoy-monto">$0</p>
-            <p class="stat-sub" id="stat-hoy-cantidad">0 ventas</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="icon-circle icon-circle--sm" id="icon-calendar-stat"></span>
-          <div>
-            <p class="stat-label">Este mes</p>
-            <p class="stat-value" id="stat-mes-monto">$0</p>
-            <p class="stat-sub" id="stat-mes-cantidad">0 ventas</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="icon-circle icon-circle--sm icon-circle--warning" id="icon-clock"></span>
-          <div>
-            <p class="stat-label">Pendientes</p>
-            <p class="stat-value" id="stat-pendientes">0</p>
-            <p class="stat-sub">por facturar</p>
-          </div>
-        </div>
-      </div>
 
       <div class="card">
         <div class="card-header">
@@ -225,10 +199,23 @@
       </div>
     </main>
 
+    <nav class="mobile-tabbar" aria-label="Navegación mobile">
+      <a href="./resumen.html" class="mobile-tabbar-item"><span id="icon-tab-resumen"></span>Resumen</a>
+      <a href="./catalogo.html" class="mobile-tabbar-item"><span id="icon-tab-catalogo"></span>Catálogo</a>
+      <div class="mobile-tabbar-fab-wrap">
+        <a href="./ventas.html" class="mobile-tabbar-fab">
+          <span class="mobile-tabbar-fab-icon" id="icon-tab-ventas"></span>
+          Ventas
+        </a>
+      </div>
+      <a href="./facturas.html" class="mobile-tabbar-item"><span id="icon-tab-facturas"></span>Facturas</a>
+      <a href="#" class="mobile-tabbar-item" id="mobile-logout-link"><span id="icon-tab-logout"></span>Salir</a>
+    </nav>
+
     <script type="module">
       import { sb } from "./js/supabaseClient.js";
       import { createAuthService } from "./js/auth.js";
-      import { createVentasService, calcularPrecioTotal, computeStats } from "./js/ventas.js";
+      import { createVentasService, calcularPrecioTotal } from "./js/ventas.js";
       import { icons } from "./js/icons.js";
       import { LOCAL_SIMPLE_CONFIG } from "./js/config.js";
 
@@ -238,9 +225,7 @@
         ["icon-document", "document"],
         ["icon-box", "box"],
         ["icon-logout", "logout"],
-        ["icon-trending", "trendingUp"],
-        ["icon-calendar-stat", "calendar"],
-        ["icon-clock", "clock"],
+        ["icon-nav-resumen", "trendingUp"],
         ["icon-cart-lg", "cart"],
         ["icon-minus", "minus"],
         ["icon-plus", "plus"],
@@ -253,6 +238,11 @@
         ["icon-tag", "tag"],
         ["icon-filter", "filter"],
         ["icon-check-2", "check"],
+        ["icon-tab-resumen", "trendingUp"],
+        ["icon-tab-catalogo", "box"],
+        ["icon-tab-ventas", "cart"],
+        ["icon-tab-facturas", "document"],
+        ["icon-tab-logout", "logout"],
       ]) {
         const el = document.getElementById(id);
         if (el) el.innerHTML = icons[name];
@@ -279,10 +269,13 @@
       document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
       document.getElementById("user-name").textContent = profile.username;
 
-      document.getElementById("logout-link").addEventListener("click", async () => {
+      async function cerrarSesion(event) {
+        event.preventDefault();
         await auth.logout();
         window.location.href = "./index.html";
-      });
+      }
+      document.getElementById("logout-link").addEventListener("click", cerrarSesion);
+      document.getElementById("mobile-logout-link").addEventListener("click", cerrarSesion);
 
       // Buscador con autocompletado propio (no <datalist>: en Safari de
       // iOS no muestra sugerencias al tipear, es una limitación conocida
@@ -437,7 +430,6 @@
         feedbackEl.textContent = "Venta guardada.";
         feedbackEl.hidden = false;
         await cargarVentas();
-        await cargarStats();
       });
 
       const tbody = document.getElementById("ventas-tbody");
@@ -536,7 +528,6 @@
             feedbackEl.textContent = resultado.message || "No se pudo generar el borrador.";
           }
           await cargarVentas();
-          await cargarStats();
         } catch (err) {
           pageErrorEl.textContent = "No se pudo generar el borrador por un error de conexión. Volvé a intentar.";
           pageErrorEl.hidden = false;
@@ -565,23 +556,6 @@
         }
       }
 
-      // Tarjetas de resumen: siempre sobre el total de ventas del local,
-      // independiente de los filtros del listado de abajo.
-      async function cargarStats() {
-        const { data } = await ventasService.listarVentas(localId, {});
-        const hoy = new Date().toISOString().slice(0, 10);
-        const stats = computeStats(data, hoy);
-        document.getElementById("stat-hoy-monto").textContent = `$${stats.hoy.monto}`;
-        document.getElementById("stat-hoy-cantidad").textContent = `${stats.hoy.cantidad} ${
-          stats.hoy.cantidad === 1 ? "venta" : "ventas"
-        }`;
-        document.getElementById("stat-mes-monto").textContent = `$${stats.mes.monto}`;
-        document.getElementById("stat-mes-cantidad").textContent = `${stats.mes.cantidad} ${
-          stats.mes.cantidad === 1 ? "venta" : "ventas"
-        }`;
-        document.getElementById("stat-pendientes").textContent = stats.pendientes;
-      }
-
       const filtrosForm = document.getElementById("filtros-form");
       filtrosForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -589,7 +563,6 @@
       });
 
       await cargarVentas();
-      await cargarStats();
     </script>
   </body>
 </html>

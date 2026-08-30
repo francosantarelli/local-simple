@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=11" />
+    <link rel="stylesheet" href="./css/styles.css?v=12" />
   </head>
   <body>
     <header class="app-header">
@@ -19,6 +19,7 @@
         <a href="./ventas.html"><span id="icon-cart"></span> Ventas</a>
         <a href="./facturas.html" aria-current="page"><span id="icon-document"></span> Facturas</a>
         <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
+        <a href="./resumen.html"><span id="icon-nav-resumen"></span> Resumen</a>
       </nav>
       <div class="header-right">
         <div class="user-chip">
@@ -86,6 +87,19 @@
       </div>
     </main>
 
+    <nav class="mobile-tabbar" aria-label="Navegación mobile">
+      <a href="./resumen.html" class="mobile-tabbar-item"><span id="icon-tab-resumen"></span>Resumen</a>
+      <a href="./catalogo.html" class="mobile-tabbar-item"><span id="icon-tab-catalogo"></span>Catálogo</a>
+      <div class="mobile-tabbar-fab-wrap">
+        <a href="./ventas.html" class="mobile-tabbar-fab">
+          <span class="mobile-tabbar-fab-icon" id="icon-tab-ventas"></span>
+          Ventas
+        </a>
+      </div>
+      <a href="./facturas.html" class="mobile-tabbar-item" aria-current="page"><span id="icon-tab-facturas"></span>Facturas</a>
+      <a href="#" class="mobile-tabbar-item" id="mobile-logout-link"><span id="icon-tab-logout"></span>Salir</a>
+    </nav>
+
     <script type="module">
       import { sb } from "./js/supabaseClient.js";
       import { createAuthService } from "./js/auth.js";
@@ -101,6 +115,12 @@
         ["icon-logout", "logout"],
         ["icon-document-lg", "document"],
         ["icon-tag-lg", "tag"],
+        ["icon-nav-resumen", "trendingUp"],
+        ["icon-tab-resumen", "trendingUp"],
+        ["icon-tab-catalogo", "box"],
+        ["icon-tab-ventas", "cart"],
+        ["icon-tab-facturas", "document"],
+        ["icon-tab-logout", "logout"],
       ]) {
         const el = document.getElementById(id);
         if (el) el.innerHTML = icons[name];
@@ -112,10 +132,13 @@
         window.location.href = "./index.html";
       }
 
-      document.getElementById("logout-link").addEventListener("click", async () => {
+      async function cerrarSesion(event) {
+        event.preventDefault();
         await auth.logout();
         window.location.href = "./index.html";
-      });
+      }
+      document.getElementById("logout-link").addEventListener("click", cerrarSesion);
+      document.getElementById("mobile-logout-link").addEventListener("click", cerrarSesion);
 
       const { data: profile } = await sb
         .from("profiles")

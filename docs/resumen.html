@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Resumen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/styles.css?v=12" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="./ventas.html" class="brand">
+        <span class="brand-icon" id="icon-store"></span>
+        local-simple
+      </a>
+      <nav>
+        <a href="./ventas.html"><span id="icon-cart"></span> Ventas</a>
+        <a href="./facturas.html"><span id="icon-document"></span> Facturas</a>
+        <a href="./catalogo.html"><span id="icon-box"></span> Catálogo</a>
+        <a href="./resumen.html" aria-current="page"><span id="icon-nav-resumen"></span> Resumen</a>
+      </nav>
+      <div class="header-right">
+        <div class="user-chip">
+          <span class="avatar" id="user-avatar"></span>
+          <span id="user-name"></span>
+        </div>
+        <button type="button" class="icon-button" id="logout-link" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <span id="icon-logout"></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <p id="page-error" class="error-message" role="alert" hidden></p>
+
+      <div style="margin-bottom: 20px">
+        <h1>Resumen</h1>
+        <p style="margin: 4px 0 0; color: var(--color-muted); font-size: 0.9rem">Cómo viene el local</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm" id="icon-trending"></span>
+          <div>
+            <p class="stat-label">Ventas hoy</p>
+            <p class="stat-value" id="stat-hoy-monto">$0</p>
+            <p class="stat-sub" id="stat-hoy-cantidad">0 ventas</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm" id="icon-calendar-stat"></span>
+          <div>
+            <p class="stat-label">Este mes</p>
+            <p class="stat-value" id="stat-mes-monto">$0</p>
+            <p class="stat-sub" id="stat-mes-cantidad">0 ventas</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="icon-circle icon-circle--sm icon-circle--warning" id="icon-clock"></span>
+          <div>
+            <p class="stat-label">Pendientes</p>
+            <p class="stat-value" id="stat-pendientes">0</p>
+            <p class="stat-sub">por facturar</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <nav class="mobile-tabbar" aria-label="Navegación mobile">
+      <a href="./resumen.html" class="mobile-tabbar-item" aria-current="page"><span id="icon-tab-resumen"></span>Resumen</a>
+      <a href="./catalogo.html" class="mobile-tabbar-item"><span id="icon-tab-catalogo"></span>Catálogo</a>
+      <div class="mobile-tabbar-fab-wrap">
+        <a href="./ventas.html" class="mobile-tabbar-fab">
+          <span class="mobile-tabbar-fab-icon" id="icon-tab-ventas"></span>
+          Ventas
+        </a>
+      </div>
+      <a href="./facturas.html" class="mobile-tabbar-item"><span id="icon-tab-facturas"></span>Facturas</a>
+      <a href="#" class="mobile-tabbar-item" id="mobile-logout-link"><span id="icon-tab-logout"></span>Salir</a>
+    </nav>
+
+    <script type="module">
+      import { sb } from "./js/supabaseClient.js";
+      import { createAuthService } from "./js/auth.js";
+      import { createVentasService, computeStats } from "./js/ventas.js";
+      import { icons } from "./js/icons.js";
+
+      for (const [id, name] of [
+        ["icon-store", "store"],
+        ["icon-cart", "cart"],
+        ["icon-document", "document"],
+        ["icon-box", "box"],
+        ["icon-logout", "logout"],
+        ["icon-nav-resumen", "trendingUp"],
+        ["icon-trending", "trendingUp"],
+        ["icon-calendar-stat", "calendar"],
+        ["icon-clock", "clock"],
+        ["icon-tab-resumen", "trendingUp"],
+        ["icon-tab-catalogo", "box"],
+        ["icon-tab-ventas", "cart"],
+        ["icon-tab-facturas", "document"],
+        ["icon-tab-logout", "logout"],
+      ]) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = icons[name];
+      }
+
+      const auth = createAuthService(sb);
+      const ventasService = createVentasService(sb);
+
+      const session = await auth.requireSession();
+      if (!session) {
+        window.location.href = "./index.html";
+      }
+
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("local_id, username")
+        .eq("id", session.user.id)
+        .single();
+      const localId = profile.local_id;
+
+      document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
+      document.getElementById("user-name").textContent = profile.username;
+
+      async function cerrarSesion(event) {
+        event.preventDefault();
+        await auth.logout();
+        window.location.href = "./index.html";
+      }
+      document.getElementById("logout-link").addEventListener("click", cerrarSesion);
+      document.getElementById("mobile-logout-link").addEventListener("click", cerrarSesion);
+
+      const pageErrorEl = document.getElementById("page-error");
+
+      async function cargarStats() {
+        try {
+          const { data, error } = await ventasService.listarVentas(localId, {});
+          if (error) throw error;
+          pageErrorEl.hidden = true;
+
+          const hoy = new Date().toLocaleDateString("en-CA");
+          const stats = computeStats(data, hoy);
+          document.getElementById("stat-hoy-monto").textContent = `$${stats.hoy.monto}`;
+          document.getElementById("stat-hoy-cantidad").textContent = `${stats.hoy.cantidad} ${
+            stats.hoy.cantidad === 1 ? "venta" : "ventas"
+          }`;
+          document.getElementById("stat-mes-monto").textContent = `$${stats.mes.monto}`;
+          document.getElementById("stat-mes-cantidad").textContent = `${stats.mes.cantidad} ${
+            stats.mes.cantidad === 1 ? "venta" : "ventas"
+          }`;
+          document.getElementById("stat-pendientes").textContent = stats.pendientes;
+        } catch (err) {
+          pageErrorEl.textContent = "No se pudo cargar el resumen. Volvé a intentar en unos segundos.";
+          pageErrorEl.hidden = false;
+        }
+      }
+
+      await cargarStats();
+    </script>
+  </body>
+</html>
