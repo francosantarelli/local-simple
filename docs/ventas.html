@@ -7,13 +7,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=15" />
+    <link rel="stylesheet" href="./css/styles.css?v=16" />
   </head>
   <body>
     <header class="app-header">
       <a href="./ventas.html" class="brand">
         <span class="brand-icon" id="icon-store"></span>
-        local-simple
+        <span id="brand-name">local-simple</span>
       </a>
       <nav>
         <a href="./ventas.html" aria-current="page"><span id="icon-cart"></span> Ventas</a>
@@ -263,13 +263,14 @@
 
       const { data: profile } = await sb
         .from("profiles")
-        .select("local_id, username")
+        .select("local_id, username, locales ( nombre_fantasia )")
         .eq("id", session.user.id)
         .single();
       const localId = profile.local_id;
 
       document.getElementById("user-avatar").textContent = profile.username.slice(0, 1).toUpperCase();
       document.getElementById("user-name").textContent = profile.username;
+      document.getElementById("brand-name").textContent = profile.locales?.nombre_fantasia ?? "local-simple";
 
       async function cerrarSesion(event) {
         event.preventDefault();

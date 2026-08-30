@@ -83,6 +83,14 @@ svg {
   letter-spacing: -0.01em;
   text-decoration: none;
   color: var(--color-text);
+  min-width: 0;
+}
+
+.brand #brand-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
 }
 
 .brand-icon {
