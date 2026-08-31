@@ -31,13 +31,15 @@ Nunca commitear valores reales (Principio IV de la constitution).
 | `EMAIL_FROM` | `recuperar-password` | Remitente del email de recuperación |
 | `ARCA_WSAA_URL` | `confirmar-factura` | URL del servicio WSAA de ARCA (homologación o producción) |
 | `ARCA_WSFE_URL` | `confirmar-factura` | URL del servicio WSFEv1 de ARCA |
-| `ARCA_CERT_PEM` | `confirmar-factura` | Certificado X.509 del local (PEM) |
-| `ARCA_KEY_PEM` | `confirmar-factura` | Clave privada asociada (PEM) |
 
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los setea Supabase automáticamente en runtime,
-no hace falta configurarlos a mano. Ver también
+no hace falta configurarlos a mano.
+
+El certificado/clave de ARCA **no** es un secreto global: cada local tiene el suyo en la
+tabla `local_arca_credentials` (un local sin fila ahí simplemente no puede emitir facturas
+todavía). Ver
 [supabase/functions/confirmar-factura/README.md](supabase/functions/confirmar-factura/README.md)
-para el límite conocido de un solo local por ahora.
+para cómo cargarlo.
 
 ### Cron semanal
 

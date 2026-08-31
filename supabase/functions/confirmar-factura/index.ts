@@ -1,12 +1,12 @@
 // Entrypoint Deno de `confirmar-factura` (contracts/confirmar-factura.md).
 // Wiring real de Supabase + ARCA sobre la lógica pura en ./logic.ts.
 //
-// Límite conocido (Principio I, YAGNI): el certificado/clave de ARCA se
-// leen de un único par de secretos (ARCA_CERT_PEM/ARCA_KEY_PEM), asumiendo
-// un solo local con integración ARCA activa, acorde al alcance inicial de
-// la constitution. Si en el futuro hace falta más de un local con
-// facturación ARCA propia, esto necesita moverse a almacenamiento por
-// local (ej. Supabase Vault), no a variables globales.
+// El certificado/clave de ARCA son por local (tabla `local_arca_credentials`,
+// cada local puede tener su propio CUIT), no un secreto global — ver
+// supabase/migrations/20260831000000_local_arca_credentials.sql. WSAA/WSFEv1
+// sí son globales: son los mismos endpoints de ARCA para todos los locales,
+// solo cambian entre homologación y producción (una decisión de ambiente,
+// no de tenant).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleConfirmarFactura } from "./logic.ts";
 import {
@@ -14,6 +14,7 @@ import {
   obtenerUltimoComprobanteAutorizado,
   solicitarCAE,
   tipoComprobantePorCondicionIva,
+  type CredencialesArca,
   type TicketAcceso,
 } from "./arcaClient.ts";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -22,14 +23,27 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const wsaaUrl = Deno.env.get("ARCA_WSAA_URL")!;
 const wsfeUrl = Deno.env.get("ARCA_WSFE_URL")!;
-const certPem = Deno.env.get("ARCA_CERT_PEM")!;
-const keyPem = Deno.env.get("ARCA_KEY_PEM")!;
 
 const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-async function obtenerTicketVigente(localId: string): Promise<TicketAcceso> {
+async function obtenerCredencialesArca(
+  localId: string
+): Promise<Pick<CredencialesArca, "certPem" | "keyPem"> | null> {
+  const { data } = await admin
+    .from("local_arca_credentials")
+    .select("cert_pem, key_pem")
+    .eq("local_id", localId)
+    .maybeSingle();
+  if (!data) return null;
+  return { certPem: data.cert_pem, keyPem: data.key_pem };
+}
+
+async function obtenerTicketVigente(
+  localId: string,
+  credenciales: Pick<CredencialesArca, "certPem" | "keyPem">
+): Promise<TicketAcceso> {
   const { data: cacheado } = await admin
     .from("arca_tickets")
     .select("token, sign, expira_en")
@@ -47,8 +61,7 @@ async function obtenerTicketVigente(localId: string): Promise<TicketAcceso> {
     .single();
 
   const nuevoTicket = await solicitarTicketAcceso(wsaaUrl, {
-    certPem,
-    keyPem,
+    ...credenciales,
     cuit: local!.cuit,
   });
 
@@ -107,6 +120,14 @@ Deno.serve(async (req) => {
     },
 
     async emitirAnteArca(factura) {
+      const credenciales = await obtenerCredencialesArca(factura.localId);
+      if (!credenciales) {
+        return {
+          aceptado: false,
+          motivo: "Este local no tiene un certificado ARCA configurado. Contactá al administrador.",
+        };
+      }
+
       const { data: facturaCompleta } = await admin
         .from("facturas")
         .select("monto_total, locales(cuit, punto_venta, condicion_iva)")
@@ -119,7 +140,7 @@ Deno.serve(async (req) => {
       };
 
       try {
-        const ticket = await obtenerTicketVigente(factura.localId);
+        const ticket = await obtenerTicketVigente(factura.localId, credenciales);
         const tipoComprobante = tipoComprobantePorCondicionIva(local.condicion_iva);
         const ultimoNumero = await obtenerUltimoComprobanteAutorizado(
           wsfeUrl,
@@ -129,7 +150,7 @@ Deno.serve(async (req) => {
           tipoComprobante
         );
 
-        return await solicitarCAE(wsfeUrl, ticket, { certPem, keyPem, cuit: local.cuit }, {
+        return await solicitarCAE(wsfeUrl, ticket, { ...credenciales, cuit: local.cuit }, {
           puntoVenta: local.punto_venta,
           tipoComprobante,
           importeTotal: Number(facturaCompleta!.monto_total),

@@ -1,6 +1,8 @@
-# Secretos requeridos: `confirmar-factura`
+# Secretos y credenciales: `confirmar-factura`
 
-Configurar con `supabase secrets set` (nunca commitear valores reales — Principio IV):
+## Secretos globales (`supabase secrets set`)
+
+Nunca commitear valores reales (Principio IV):
 
 | Variable | Descripción |
 |---|---|
@@ -8,14 +10,38 @@ Configurar con `supabase secrets set` (nunca commitear valores reales — Princi
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key del proyecto (la setea Supabase automáticamente) |
 | `ARCA_WSAA_URL` | URL del servicio WSAA (`https://wsaahomo.afip.gov.ar/ws/services/LoginCms` en homologación) |
 | `ARCA_WSFE_URL` | URL del servicio WSFEv1 (`https://wswhomo.afip.gov.ar/wsfev1/service.asmx` en homologación) |
-| `ARCA_CERT_PEM` | Certificado X.509 del local, en formato PEM |
-| `ARCA_KEY_PEM` | Clave privada asociada al certificado, en formato PEM |
 
-Límite conocido (documentado también en `index.ts`): estos dos últimos secretos son
-globales a la función, es decir que hoy solo soportan **un** local con integración ARCA
-activa (el alcance inicial de la constitution). Si más adelante hace falta más de un
-local facturando por su cuenta, hay que moverlos a almacenamiento por local (ej.
-Supabase Vault) en vez de variables de entorno globales — no antes, por el Principio I.
+Estas dos URL son las mismas para todos los locales: homologación/producción es una
+decisión de ambiente del deploy entero, no de cada local.
+
+## Certificado por local (tabla `local_arca_credentials`)
+
+El certificado X.509 y la clave privada **sí son por local** (cada uno puede tener un CUIT
+distinto) — viven en la tabla `local_arca_credentials`
+(`supabase/migrations/20260831000000_local_arca_credentials.sql`), con RLS habilitada y
+sin ninguna policy: ni anon ni authenticated pueden leer/escribir esa tabla nunca, solo el
+service role de esta Edge Function. Un local sin fila ahí no puede emitir todavía —
+"Confirmar y emitir" le va a devolver la factura como rechazada con el motivo "Este local
+no tiene un certificado ARCA configurado."
+
+Para cargar o actualizar el certificado de un local, correr en el **SQL Editor** del
+dashboard de Supabase (nunca en una migración commiteada — Principio IV):
+
+```sql
+insert into local_arca_credentials (local_id, cert_pem, key_pem)
+values (
+  '<uuid-del-local>',
+  '-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----',
+  '-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----'
+)
+on conflict (local_id) do update
+  set cert_pem = excluded.cert_pem,
+      key_pem = excluded.key_pem;
+```
 
 Validado de punta a punta contra el ambiente de **homologación** de ARCA (2026-08-29):
 certificado real (CUIT 27357665278, alias `analocalsimple`, servicio `wsfe` asociado vía
