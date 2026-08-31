@@ -29,17 +29,18 @@ Nunca commitear valores reales (Principio IV de la constitution).
 |---|---|---|
 | `RESEND_API_KEY` | `recuperar-password` | API key de Resend para enviar el email de recuperación (research.md §6) |
 | `EMAIL_FROM` | `recuperar-password` | Remitente del email de recuperación |
-| `ARCA_WSAA_URL` | `confirmar-factura` | URL del servicio WSAA de ARCA (homologación o producción) |
-| `ARCA_WSFE_URL` | `confirmar-factura` | URL del servicio WSFEv1 de ARCA |
 
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los setea Supabase automáticamente en runtime,
 no hace falta configurarlos a mano.
 
-El certificado/clave de ARCA **no** es un secreto global: cada local tiene el suyo en la
-tabla `local_arca_credentials` (un local sin fila ahí simplemente no puede emitir facturas
-todavía). Ver
+El certificado/clave de ARCA **no** es un secreto global: cada local puede tener uno de
+homologación (sandbox) y otro de producción a la vez, en la tabla `local_arca_credentials`,
+y `locales.arca_entorno_activo` dice cuál de los dos usa al emitir (un local sin fila para
+su entorno activo simplemente no puede emitir facturas todavía). Las URL de WSAA/WSFEv1 no
+son configurables: son fijas por entorno y están hardcodeadas en
+`confirmar-factura/index.ts`. Ver
 [supabase/functions/confirmar-factura/README.md](supabase/functions/confirmar-factura/README.md)
-para cómo cargarlo.
+para cómo cargar el certificado y cambiar de entorno.
 
 ### Cron semanal
 
